@@ -81,6 +81,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .tag.norec{background:#eef1f4;color:#7a8794}
 .tag.rec{background:var(--rec-soft);color:var(--rec)}
 .tag.conflict{background:var(--warn-soft);color:var(--warn)}
+.tag.topic{background:#eef2f7;color:#55657a;text-transform:none;letter-spacing:0;font-weight:600}
 
 /* status buttons */
 .statusrow{display:flex;gap:6px;margin-top:4px}
@@ -136,6 +137,11 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .addbtn{background:var(--brand-soft);color:var(--brand-dk);border:1px dashed var(--brand);
   border-radius:9px;padding:9px;width:100%;font-size:13px;font-weight:600;margin-top:3px}
 
+.hp{font-size:13.5px;color:var(--ink);line-height:1.6}
+.hp ul{margin:0;padding-left:18px} .hp li{margin-bottom:7px}
+.legrow{display:flex;align-items:center;gap:8px;margin:5px 0 2px}
+.legrow .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.legrow .dot.live{background:var(--live)} .legrow .dot.rec{background:var(--rec)} .legrow .dot.skip{background:var(--skip)}
 .empty{text-align:center;color:var(--muted);padding:36px 20px;font-size:13.5px}
 .empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
 
@@ -185,6 +191,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
   <button data-tab="rec">Recordings</button>
   <button data-tab="dash">CEU Dashboard</button>
   <button data-tab="plan">My Plan</button>
+  <button data-tab="help">ℹ️ Help</button>
 </nav>
 
 <main>
@@ -193,6 +200,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
   <section class="view" id="view-rec"></section>
   <section class="view" id="view-dash"></section>
   <section class="view print-on" id="view-plan"></section>
+  <section class="view" id="view-help"></section>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -206,6 +214,8 @@ const byId = {}; SESS.forEach(s=>byId[s.id]=s);
 const DAYS = [...new Set(SESS.map(s=>s.day))]
   .sort((a,b)=> (SESS.find(s=>s.day===a).dayOrder) - (SESS.find(s=>s.day===b).dayOrder));
 const TYPES = [...new Set(SESS.map(s=>s.type))].sort();
+const TOPICS = (()=>{ const t=[...new Set(SESS.map(s=>s.topic))].filter(Boolean).sort();
+  const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
@@ -281,17 +291,18 @@ function renderRibbon(){
 /* ====================================================================== */
 /*  BROWSE                                                                 */
 /* ====================================================================== */
-const bf = {q:"", day:"", type:"", level:"", status:"", fee:"", rec:""};
+const bf = {q:"", day:"", topic:"", type:"", level:"", status:"", fee:"", rec:""};
 function renderBrowse(){
   const el=document.getElementById('view-browse');
   el.innerHTML = `
    <div class="filters">
-     <input type="search" id="bq" placeholder="Search sessions…" value="${escapeAttr(bf.q)}">
+     <input type="search" id="bq" placeholder="Search title, topic, or type…" value="${escapeAttr(bf.q)}">
      <div class="chips" id="dayChips">
        <button class="chip ${bf.day===''?'on':''}" data-day="">All days</button>
        ${DAYS.map(d=>`<button class="chip ${bf.day===d?'on':''}" data-day="${d}">${d.slice(0,3)} ${dateFor(d)}</button>`).join('')}
      </div>
      <div class="filter-row">
+       <select id="fTopic"><option value="">All topics</option>${TOPICS.map(t=>`<option ${bf.topic===t?'selected':''}>${t}</option>`).join('')}</select>
        <select id="fType"><option value="">All types</option>${TYPES.map(t=>`<option ${bf.type===t?'selected':''}>${t}</option>`).join('')}</select>
        <select id="fStatus">
          <option value="">Any status</option>
@@ -309,6 +320,7 @@ function renderBrowse(){
 
   document.getElementById('bq').addEventListener('input',e=>{bf.q=e.target.value;drawList();});
   el.querySelectorAll('#dayChips .chip').forEach(c=>c.onclick=()=>{bf.day=c.dataset.day;renderBrowse();});
+  document.getElementById('fTopic').onchange=e=>{bf.topic=e.target.value;drawList();};
   document.getElementById('fType').onchange=e=>{bf.type=e.target.value;drawList();};
   document.getElementById('fStatus').onchange=e=>{bf.status=e.target.value;drawList();};
   document.getElementById('fFee').onchange=e=>{bf.fee=e.target.value;drawList();};
@@ -319,6 +331,7 @@ function dateFor(day){ const s=SESS.find(x=>x.day===day); return s?s.date:''; }
 
 function matchFilter(s){
   if(bf.day && s.day!==bf.day) return false;
+  if(bf.topic && s.topic!==bf.topic) return false;
   if(bf.type && s.type!==bf.type) return false;
   if(bf.status){
     const p=pickOf(s.id);
@@ -331,14 +344,19 @@ function matchFilter(s){
   if(bf.rec==='norec' && isRecordable(s)) return false;
   if(bf.q){
     const q=bf.q.toLowerCase();
-    if(!(s.title.toLowerCase().includes(q) || (s.type||'').toLowerCase().includes(q) || (s.code||'').toLowerCase().includes(q))) return false;
+    if(!(s.title.toLowerCase().includes(q) || (s.topic||'').toLowerCase().includes(q) || (s.type||'').toLowerCase().includes(q) || (s.code||'').toLowerCase().includes(q))) return false;
   }
   return true;
 }
+function anyFilter(){ return bf.q||bf.day||bf.topic||bf.type||bf.status||bf.fee||bf.rec; }
+function clearFilters(){ Object.keys(bf).forEach(k=>bf[k]=""); renderBrowse(); }
 function drawList(){
   const list=SESS.filter(matchFilter);
-  document.getElementById('bcount').textContent = list.length+" session"+(list.length===1?'':'s')+
-    (bf.day?' on '+bf.day:' across all 5 days');
+  const cc=document.getElementById('bcount');
+  cc.innerHTML = list.length+" session"+(list.length===1?'':'s')+
+    (bf.day?' on '+bf.day:' across all 5 days')+
+    (anyFilter()?' · <a href="#" id="clearF" style="font-weight:600">clear filters</a>':'');
+  const cf=document.getElementById('clearF'); if(cf) cf.onclick=e=>{e.preventDefault();clearFilters();};
   const host=document.getElementById('blist');
   if(!list.length){ host.innerHTML=`<div class="empty"><b>No matches</b>Try clearing a filter.</div>`; return; }
   // group by day
@@ -360,6 +378,7 @@ function cardHTML(s,withControls){
     <h3>${escapeHtml(s.title)}</h3>
     <div class="meta">
       <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
+      ${s.topic?`<span class="tag topic">${escapeHtml(s.topic)}</span>`:''}
       <span>${s.type}</span>
       ${s.level?`<span>${s.level}</span>`:''}
       <span class="tag ce">${fmtCE(s.ce)} CE</span>
@@ -637,6 +656,66 @@ function renderPlan(){
 }
 
 /* ====================================================================== */
+/*  HELP / INSTRUCTIONS                                                     */
+/* ====================================================================== */
+function renderHelp(){
+  const el=document.getElementById('view-help');
+  el.innerHTML=`
+   <div class="panel">
+     <h2>👋 Welcome, Sarah</h2>
+     <div class="hp">This planner holds all <b>393 sessions</b> from the 2026 AANP National Conference (Las Vegas, Jun 23–27). Use it to pick what to attend live, what to catch by recording, and to watch your CEUs add up toward the <b>${TARGET}</b> you need for AGACNP renewal. Everything saves automatically on this device — no login.</div>
+   </div>
+
+   <div class="panel">
+     <h2>1 · Browse &amp; choose sessions</h2>
+     <ul class="hp">
+       <li><b>Filter</b> by day (chips at top), <b>topic</b> (e.g. Neurology, Cardiology, Critical Care), session type, status, free/paid, or recording availability.</li>
+       <li><b>Search</b> the box matches session titles, topics, and types.</li>
+       <li>On each session tap one button:
+         <div class="legrow"><span class="dot live"></span><b>Live</b> — you'll be in the room</div>
+         <div class="legrow"><span class="dot rec"></span><b>Record</b> — watch on-demand later for extra CEUs</div>
+         <div class="legrow"><span class="dot skip"></span><b>Skip</b> — hide it from your plan</div>
+       </li>
+       <li>Tap a button again to undo it.</li>
+     </ul>
+   </div>
+
+   <div class="panel">
+     <h2>2 · Rooms &amp; your foot 🦶</h2>
+     <div class="hp">AANP hasn't published room numbers yet. As they're announced, type each into the <b>Room</b> box on the session. In <b>Live Schedule</b> the app shows your rooms in order and flags <span style="color:var(--warn);font-weight:600">tight transitions</span> (under 25 minutes between back-to-back sessions) so you can plan the walk and avoid rushing.</div>
+   </div>
+
+   <div class="panel">
+     <h2>3 · Live vs. Recording</h2>
+     <div class="hp">You can only be in one room at a time, so the <b>Live Schedule</b> flags any two live picks that <span style="color:var(--warn);font-weight:600">overlap</span>. The fix: keep one live and switch the other to <b>Record</b>. Recordings never conflict — stack up as many as you like and work through them after the conference for additional CEUs.</div>
+   </div>
+
+   <div class="panel">
+     <h2>4 · Track your CEUs</h2>
+     <ul class="hp">
+       <li>The bar at the very top always shows your running total out of ${TARGET}.</li>
+       <li>On <b>CEU Dashboard</b>, enter the credits you <b>already earned</b> this renewal cycle (you mentioned ~10–15).</li>
+       <li>Add any <b>other / external CEUs</b> (journal CE, webinars, paid workshops) in the list there — it all counts toward your total.</li>
+     </ul>
+   </div>
+
+   <div class="panel">
+     <h2>5 · Print your plan</h2>
+     <div class="hp">The <b>My Plan</b> tab (or 🖨️ button up top) shows a clean, one-look summary of only what you're attending and watching, with CEU totals and room numbers — ready to print or save as a PDF to carry at the conference.</div>
+   </div>
+
+   <div class="panel">
+     <h2>6 · Backups &amp; devices</h2>
+     <div class="hp">Your plan lives in this browser only. On the <b>CEU Dashboard</b>, use <b>Export backup</b> to save a file, then <b>Import</b> it on another device (or after clearing your browser). Tip: bookmark this page on your phone's home screen for one-tap access.</div>
+   </div>
+
+   <div class="panel">
+     <h2>A note on the data</h2>
+     <div class="hp">Sessions, times, CE hours, and types come straight from sessions.aanp.org. <b>Topics</b> are grouped automatically from session titles, so a few may sit in a neighboring category — use Search if you can't find something. Always confirm final CE credit and on-demand availability with AANP. 💚</div>
+   </div>`;
+}
+
+/* ====================================================================== */
 /*  ROUTER                                                                 */
 /* ====================================================================== */
 let activeTab='browse';
@@ -646,6 +725,7 @@ function renderActive(){
   else if(activeTab==='rec') renderRec();
   else if(activeTab==='dash') renderDash();
   else if(activeTab==='plan') renderPlan();
+  else if(activeTab==='help') renderHelp();
 }
 function show(tab){
   activeTab=tab;
