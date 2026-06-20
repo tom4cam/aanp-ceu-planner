@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sarah's AANP 2026 CEU Planner</title>
+<style>
+:root{
+  --bg:#f4f6f9; --card:#fff; --ink:#1d2733; --muted:#62707f;
+  --line:#e3e8ee; --brand:#0a6e5f; --brand-dk:#075247; --brand-soft:#e6f3f0;
+  --live:#10916f; --live-soft:#e3f4ee; --rec:#2f6fb0; --rec-soft:#e7f0f9;
+  --skip:#9aa7b4; --warn:#c8451f; --warn-soft:#fcebe5; --gold:#b8860b;
+  --shadow:0 1px 3px rgba(16,32,48,.08),0 1px 2px rgba(16,32,48,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.4;-webkit-text-size-adjust:100%}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--brand)}
+
+/* ---- Header ---- */
+header.app{position:sticky;top:0;z-index:30;background:var(--brand);color:#fff;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom,0)) ;padding-bottom:0}
+.app-title{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:4px 2px 10px}
+.app-title h1{font-size:17px;margin:0;font-weight:650;letter-spacing:.2px}
+.app-title .sub{font-size:11.5px;opacity:.85;font-weight:400}
+.hbtn{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:8px;
+  padding:7px 11px;font-size:12.5px;font-weight:600}
+.hbtn:active{background:rgba(255,255,255,.3)}
+
+/* ---- CEU ribbon ---- */
+.ceu-ribbon{display:flex;align-items:center;gap:12px;background:var(--brand-dk);
+  margin:0 -14px;padding:9px 14px;color:#fff}
+.ceu-ribbon .big{font-size:22px;font-weight:750;line-height:1}
+.ceu-ribbon .big small{font-size:12px;font-weight:500;opacity:.8}
+.ribbon-bar{flex:1;height:9px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden}
+.ribbon-bar > i{display:block;height:100%;background:linear-gradient(90deg,#7fe0c4,#ffe08a);border-radius:6px;transition:width .3s}
+.ribbon-meta{font-size:11.5px;opacity:.9;text-align:right;min-width:84px}
+
+/* ---- Tabs ---- */
+nav.tabs{display:flex;background:var(--brand);overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:1 0 auto;background:transparent;border:0;color:rgba(255,255,255,.72);
+  padding:11px 13px 12px;font-size:12.5px;font-weight:600;white-space:nowrap;
+  border-bottom:3px solid transparent}
+nav.tabs button.on{color:#fff;border-bottom-color:#ffe08a}
+
+main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
+
+/* ---- Filters ---- */
+.filters{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:10px;margin-bottom:12px;box-shadow:var(--shadow)}
+.filters input[type=search]{width:100%;border:1px solid var(--line);border-radius:9px;
+  padding:10px 12px;font-size:15px;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 11px;
+  font-size:12px;color:var(--muted);font-weight:600}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk)}
+.filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.filter-row select{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff;color:var(--ink)}
+.count-line{font-size:12px;color:var(--muted);margin:2px 2px 10px}
+
+/* ---- Session card ---- */
+.day-head{font-size:13px;font-weight:750;color:var(--brand-dk);text-transform:uppercase;
+  letter-spacing:.6px;margin:16px 4px 8px;display:flex;align-items:center;gap:8px}
+.day-head .pill{font-size:11px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
+.scard{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:11px 12px;margin-bottom:9px;box-shadow:var(--shadow);position:relative}
+.scard.is-live{border-left:4px solid var(--live)}
+.scard.is-rec{border-left:4px solid var(--rec)}
+.scard.is-skip{opacity:.55}
+.scard h3{font-size:14.5px;margin:0 0 5px;font-weight:640;line-height:1.32}
+.meta{display:flex;flex-wrap:wrap;gap:5px 9px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.meta b{color:var(--ink);font-weight:600}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;
+  text-transform:uppercase;letter-spacing:.3px}
+.tag.ce{background:var(--brand-soft);color:var(--brand-dk)}
+.tag.fee{background:#fff4e0;color:#9a6700}
+.tag.norec{background:#eef1f4;color:#7a8794}
+.tag.rec{background:var(--rec-soft);color:var(--rec)}
+.tag.conflict{background:var(--warn-soft);color:var(--warn)}
+
+/* status buttons */
+.statusrow{display:flex;gap:6px;margin-top:4px}
+.sbtn{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 4px;
+  font-size:12px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:4px}
+.sbtn .dot{width:9px;height:9px;border-radius:50%}
+.sbtn.live .dot{background:var(--live)} .sbtn.rec .dot{background:var(--rec)} .sbtn.skip .dot{background:var(--skip)}
+.sbtn.on.live{background:var(--live-soft);border-color:var(--live);color:var(--live)}
+.sbtn.on.rec{background:var(--rec-soft);border-color:var(--rec);color:var(--rec)}
+.sbtn.on.skip{background:#eef1f4;border-color:var(--skip);color:#5e6b78}
+
+.roomrow{display:flex;align-items:center;gap:7px;margin-top:8px}
+.roomrow label{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.roomrow input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px;min-width:0}
+.recflip{font-size:11px;color:var(--rec);background:none;border:0;text-decoration:underline;padding:4px 2px}
+
+/* ---- Schedule timeline ---- */
+.slot{margin-bottom:10px}
+.slot.conflict .scard{border-left-color:var(--warn)}
+.transition{font-size:11.5px;color:var(--warn);font-weight:600;margin:-2px 4px 8px;
+  display:flex;align-items:center;gap:6px}
+.transition.ok{color:var(--muted);font-weight:500}
+
+/* ---- Dashboard ---- */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+.stat .n{font-size:26px;font-weight:760;line-height:1}
+.stat .l{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:3px}
+.stat.live .n{color:var(--live)} .stat.rec .n{color:var(--rec)}
+.stat.prior .n{color:var(--gold)} .stat.total .n{color:var(--brand)}
+.bigprogress{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
+.bigprogress .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.bigprogress .hd .tot{font-size:30px;font-weight:780;color:var(--brand)}
+.bigprogress .hd .tot small{font-size:14px;color:var(--muted);font-weight:600}
+.bigbar{height:16px;border-radius:9px;background:#eef1f4;overflow:hidden;display:flex}
+.bigbar i{display:block;height:100%}
+.bigbar .p{background:var(--gold)} .bigbar .l{background:var(--live)} .bigbar .r{background:var(--rec)} .bigbar .m{background:#7b61c9}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:9px;font-size:11.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.remaining{font-size:13px;margin-top:10px;font-weight:600}
+.remaining.done{color:var(--live)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px;box-shadow:var(--shadow);margin-bottom:14px}
+.panel h2{font-size:14px;margin:0 0 10px;font-weight:700}
+.field{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.field label{font-size:13px;flex:1;color:var(--ink)}
+.field input{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:15px;width:90px;text-align:right}
+.manual-item{display:flex;gap:7px;align-items:center;margin-bottom:7px}
+.manual-item input.lbl{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px;min-width:0}
+.manual-item input.amt{width:64px;border:1px solid var(--line);border-radius:8px;padding:7px;font-size:13px;text-align:right}
+.manual-item button{border:0;background:var(--warn-soft);color:var(--warn);border-radius:8px;width:30px;height:30px;font-size:16px;font-weight:700;flex:none}
+.addbtn{background:var(--brand-soft);color:var(--brand-dk);border:1px dashed var(--brand);
+  border-radius:9px;padding:9px;width:100%;font-size:13px;font-weight:600;margin-top:3px}
+
+.empty{text-align:center;color:var(--muted);padding:36px 20px;font-size:13.5px}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1d2733;color:#fff;
+  padding:11px 16px;border-radius:10px;font-size:13px;font-weight:600;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.25);
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.tools button{flex:1;min-width:120px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px;font-size:12.5px;font-weight:600;color:var(--ink)}
+.note{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+/* ---- Print plan ---- */
+.printhead{display:none}
+@media print{
+  header.app,nav.tabs,.filters,.statusrow,.roomrow,.recflip,.tools,.app-actions,.no-print{display:none!important}
+  body{background:#fff}
+  main{padding:0;max-width:100%}
+  .view{display:none!important}
+  .view.print-on{display:block!important}
+  .printhead{display:block;margin-bottom:10px}
+  .scard{box-shadow:none;border:1px solid #ccc;break-inside:avoid;page-break-inside:avoid}
+  .day-head{color:#000}
+  a[href]:after{content:""}
+}
+.print-on{display:none}
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="app-title">
+    <div>
+      <h1>Sarah's AANP CEU Planner</h1>
+      <div class="sub">2026 National Conference · Las Vegas · Jun 23–27</div>
+    </div>
+    <button class="hbtn" id="printBtn">🖨️ Plan</button>
+  </div>
+  <div class="ceu-ribbon">
+    <div class="big" id="ribbonTotal">0<small>/75</small></div>
+    <div class="ribbon-bar"><i id="ribbonBar" style="width:0%"></i></div>
+    <div class="ribbon-meta" id="ribbonMeta">75 to go</div>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-tab="browse" class="on">Browse</button>
+  <button data-tab="live">Live Schedule</button>
+  <button data-tab="rec">Recordings</button>
+  <button data-tab="dash">CEU Dashboard</button>
+  <button data-tab="plan">My Plan</button>
+</nav>
+
+<main>
+  <section class="view" id="view-browse"></section>
+  <section class="view" id="view-live"></section>
+  <section class="view" id="view-rec"></section>
+  <section class="view" id="view-dash"></section>
+  <section class="view print-on" id="view-plan"></section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+const TARGET = 75;
+const SESS = (window.SESSIONS||[]).slice();
+const byId = {}; SESS.forEach(s=>byId[s.id]=s);
+const DAYS = [...new Set(SESS.map(s=>s.day))]
+  .sort((a,b)=> (SESS.find(s=>s.day===a).dayOrder) - (SESS.find(s=>s.day===b).dayOrder));
+const TYPES = [...new Set(SESS.map(s=>s.type))].sort();
+
+/* ---------- state ---------- */
+const LS_KEY = "aanp_ceu_planner_v1";
+const DEF = {picks:{}, rooms:{}, recOverride:{}, prior:0, manual:[], _seedM_:false};
+let state = load();
+function load(){
+  try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
+  return JSON.parse(JSON.stringify(DEF));
+}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* ---------- helpers ---------- */
+const fmtCE = n => (Math.round(n*100)/100).toString().replace(/\.0+$/,'');
+function isRecordable(s){ return (s.id in state.recOverride) ? state.recOverride[s.id] : s.recordable; }
+function roomOf(s){ return state.rooms[s.id] || ""; }
+function pickOf(id){ return state.picks[id] || ""; }
+
+function totals(){
+  let live=0, rec=0;
+  for(const id in state.picks){
+    const s=byId[id]; if(!s) continue;
+    if(state.picks[id]==="live") live+=s.ce;
+    else if(state.picks[id]==="rec") rec+=s.ce;
+  }
+  const manual = state.manual.reduce((a,m)=>a + (parseFloat(m.ceu)||0),0);
+  const prior = parseFloat(state.prior)||0;
+  const total = prior+live+rec+manual;
+  return {live,rec,manual,prior,total, remaining: Math.max(0,TARGET-total)};
+}
+
+/* conflict detection among LIVE picks (same date, overlapping interval) */
+function liveConflicts(){
+  const live = SESS.filter(s=>pickOf(s.id)==="live");
+  const conf = new Set();
+  for(let i=0;i<live.length;i++)for(let j=i+1;j<live.length;j++){
+    const a=live[i],b=live[j];
+    if(a.date!==b.date) continue;
+    if(a.startMin==null||a.endMin==null||b.startMin==null||b.endMin==null) continue;
+    if(a.startMin < b.endMin && b.startMin < a.endMin){ conf.add(a.id); conf.add(b.id); }
+  }
+  return conf;
+}
+
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1900);
+}
+
+function setPick(id,val){
+  const cur = pickOf(id);
+  const next = (cur===val) ? "" : val;
+  if(next==="live"){
+    // warn on conflict but allow
+    const s=byId[id];
+    const clash = SESS.find(o=>o.id!==id && pickOf(o.id)==="live" && o.date===s.date &&
+      o.startMin!=null && s.startMin!=null && s.startMin<o.endMin && o.startMin<s.endMin);
+    state.picks[id]=next;
+    if(clash) toast("⚠︎ Overlaps "+clash.start+" "+truncate(clash.title,22)+" — flagged in Live Schedule");
+  } else if(next===""){ delete state.picks[id]; }
+  else { state.picks[id]=next; }
+  save(); renderRibbon(); renderActive();
+}
+function truncate(s,n){ return s.length>n? s.slice(0,n-1)+'…':s; }
+
+/* ---------- ribbon ---------- */
+function renderRibbon(){
+  const t=totals();
+  document.getElementById('ribbonTotal').innerHTML = fmtCE(t.total)+"<small>/"+TARGET+"</small>";
+  document.getElementById('ribbonBar').style.width = Math.min(100, t.total/TARGET*100)+"%";
+  document.getElementById('ribbonMeta').textContent = t.remaining>0 ? fmtCE(t.remaining)+" to go" : "🎉 Goal met";
+}
+
+/* ====================================================================== */
+/*  BROWSE                                                                 */
+/* ====================================================================== */
+const bf = {q:"", day:"", type:"", level:"", status:"", fee:"", rec:""};
+function renderBrowse(){
+  const el=document.getElementById('view-browse');
+  el.innerHTML = `
+   <div class="filters">
+     <input type="search" id="bq" placeholder="Search sessions…" value="${escapeAttr(bf.q)}">
+     <div class="chips" id="dayChips">
+       <button class="chip ${bf.day===''?'on':''}" data-day="">All days</button>
+       ${DAYS.map(d=>`<button class="chip ${bf.day===d?'on':''}" data-day="${d}">${d.slice(0,3)} ${dateFor(d)}</button>`).join('')}
+     </div>
+     <div class="filter-row">
+       <select id="fType"><option value="">All types</option>${TYPES.map(t=>`<option ${bf.type===t?'selected':''}>${t}</option>`).join('')}</select>
+       <select id="fStatus">
+         <option value="">Any status</option>
+         <option value="live" ${bf.status==='live'?'selected':''}>🟢 Attend live</option>
+         <option value="rec" ${bf.status==='rec'?'selected':''}>🔵 Watch recording</option>
+         <option value="none" ${bf.status==='none'?'selected':''}>Undecided</option>
+         <option value="skip" ${bf.status==='skip'?'selected':''}>Skipped</option>
+       </select>
+       <select id="fFee"><option value="">Free + paid</option><option value="free" ${bf.fee==='free'?'selected':''}>Free only</option><option value="paid" ${bf.fee==='paid'?'selected':''}>Paid workshops</option></select>
+       <select id="fRec"><option value="">Any format</option><option value="rec" ${bf.rec==='rec'?'selected':''}>Recording available</option><option value="norec" ${bf.rec==='norec'?'selected':''}>Live only (no rec)</option></select>
+     </div>
+   </div>
+   <div class="count-line" id="bcount"></div>
+   <div id="blist"></div>`;
+
+  document.getElementById('bq').addEventListener('input',e=>{bf.q=e.target.value;drawList();});
+  el.querySelectorAll('#dayChips .chip').forEach(c=>c.onclick=()=>{bf.day=c.dataset.day;renderBrowse();});
+  document.getElementById('fType').onchange=e=>{bf.type=e.target.value;drawList();};
+  document.getElementById('fStatus').onchange=e=>{bf.status=e.target.value;drawList();};
+  document.getElementById('fFee').onchange=e=>{bf.fee=e.target.value;drawList();};
+  document.getElementById('fRec').onchange=e=>{bf.rec=e.target.value;drawList();};
+  drawList();
+}
+function dateFor(day){ const s=SESS.find(x=>x.day===day); return s?s.date:''; }
+
+function matchFilter(s){
+  if(bf.day && s.day!==bf.day) return false;
+  if(bf.type && s.type!==bf.type) return false;
+  if(bf.status){
+    const p=pickOf(s.id);
+    if(bf.status==='none' && p) return false;
+    if(bf.status!=='none' && p!==bf.status) return false;
+  }
+  if(bf.fee==='free' && s.fee) return false;
+  if(bf.fee==='paid' && !s.fee) return false;
+  if(bf.rec==='rec' && !isRecordable(s)) return false;
+  if(bf.rec==='norec' && isRecordable(s)) return false;
+  if(bf.q){
+    const q=bf.q.toLowerCase();
+    if(!(s.title.toLowerCase().includes(q) || (s.type||'').toLowerCase().includes(q) || (s.code||'').toLowerCase().includes(q))) return false;
+  }
+  return true;
+}
+function drawList(){
+  const list=SESS.filter(matchFilter);
+  document.getElementById('bcount').textContent = list.length+" session"+(list.length===1?'':'s')+
+    (bf.day?' on '+bf.day:' across all 5 days');
+  const host=document.getElementById('blist');
+  if(!list.length){ host.innerHTML=`<div class="empty"><b>No matches</b>Try clearing a filter.</div>`; return; }
+  // group by day
+  let html=''; let curDay=null;
+  list.sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9) || a.title.localeCompare(b.title));
+  for(const s of list){
+    if(s.day!==curDay){ curDay=s.day; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
+    html+=cardHTML(s,true);
+  }
+  host.innerHTML=html;
+  bindCards(host);
+}
+
+function cardHTML(s,withControls){
+  const p=pickOf(s.id);
+  const cls = p==='live'?'is-live':p==='rec'?'is-rec':p==='skip'?'is-skip':'';
+  const rec=isRecordable(s);
+  return `<div class="scard ${cls}" data-id="${s.id}">
+    <h3>${escapeHtml(s.title)}</h3>
+    <div class="meta">
+      <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
+      <span>${s.type}</span>
+      ${s.level?`<span>${s.level}</span>`:''}
+      <span class="tag ce">${fmtCE(s.ce)} CE</span>
+      ${s.fee?`<span class="tag fee">Paid</span>`:''}
+      ${rec?`<span class="tag rec">Rec ✓</span>`:`<span class="tag norec">Live only</span>`}
+    </div>
+    ${withControls?`
+    <div class="statusrow">
+      <button class="sbtn live ${p==='live'?'on':''}" data-act="live"><span class="dot"></span>Live</button>
+      <button class="sbtn rec ${p==='rec'?'on':''}" data-act="rec" ${rec?'':'data-norec="1"'}><span class="dot"></span>Record</button>
+      <button class="sbtn skip ${p==='skip'?'on':''}" data-act="skip"><span class="dot"></span>Skip</button>
+    </div>
+    <div class="roomrow">
+      <label>Room</label>
+      <input type="text" placeholder="add room #" value="${escapeAttr(roomOf(s))}" data-room="${s.id}">
+      <button class="recflip" data-recflip="${s.id}">${rec?'mark live-only':'mark recordable'}</button>
+    </div>`:''}
+  </div>`;
+}
+function bindCards(host){
+  host.querySelectorAll('.scard').forEach(card=>{
+    const id=card.dataset.id;
+    card.querySelectorAll('.sbtn').forEach(b=>b.onclick=()=>{
+      if(b.dataset.act==='rec' && b.dataset.norec){ toast("This session has no recording — mark it recordable first."); return; }
+      setPick(id,b.dataset.act);
+    });
+    const rm=card.querySelector('[data-room]');
+    if(rm) rm.addEventListener('input',e=>{ state.rooms[id]=e.target.value; save(); /*light*/ });
+    const rf=card.querySelector('[data-recflip]');
+    if(rf) rf.onclick=()=>{ state.recOverride[id]=!isRecordable(byId[id]); save(); renderActive(); };
+  });
+}
+
+/* ====================================================================== */
+/*  LIVE SCHEDULE                                                          */
+/* ====================================================================== */
+function renderLive(){
+  const el=document.getElementById('view-live');
+  const live = SESS.filter(s=>pickOf(s.id)==='live')
+    .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
+  if(!live.length){ el.innerHTML=`<div class="empty"><b>No live sessions yet</b>Tap “Live” on a session in Browse to build your daily schedule.</div>`; return; }
+  const conf=liveConflicts();
+  let html=`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Tight transitions (&lt;25 min between rooms) are noted so you can plan the walk. 🦶</div>`;
+  let curDay=null, prev=null;
+  for(const s of live){
+    if(s.day!==curDay){ curDay=s.day; prev=null; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
+    // transition note
+    if(prev && prev.endMin!=null && s.startMin!=null){
+      const gap=s.startMin-prev.endMin;
+      if(gap>=0 && gap<25){
+        const r1=roomOf(prev), r2=roomOf(s);
+        const rtxt=(r1||r2)?` (${r1||'?'} → ${r2||'?'})`:'';
+        html+=`<div class="transition">⏱ ${gap} min between sessions${rtxt} — tight walk</div>`;
+      }
+    }
+    const isConf=conf.has(s.id);
+    html+=`<div class="slot ${isConf?'conflict':''}">`;
+    html+=cardLiveHTML(s,isConf);
+    html+=`</div>`;
+    prev=s;
+  }
+  el.innerHTML=html;
+  el.querySelectorAll('[data-room]').forEach(rm=>{
+    rm.addEventListener('input',e=>{ state.rooms[rm.dataset.room]=e.target.value; save(); });
+  });
+  el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>{ setPick(b.dataset.drop,'live'); /*toggles off*/ });
+}
+function cardLiveHTML(s,isConf){
+  return `<div class="scard is-live" data-id="${s.id}">
+    <h3>${escapeHtml(s.title)}</h3>
+    <div class="meta">
+      <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
+      <span>${s.type}</span>
+      <span class="tag ce">${fmtCE(s.ce)} CE</span>
+      ${isConf?`<span class="tag conflict">⚠ Overlap</span>`:''}
+    </div>
+    <div class="roomrow">
+      <label>Room</label>
+      <input type="text" placeholder="add room #" value="${escapeAttr(roomOf(s))}" data-room="${s.id}">
+      <button class="recflip" data-drop="${s.id}">remove</button>
+    </div>
+  </div>`;
+}
+
+/* ====================================================================== */
+/*  RECORDINGS                                                             */
+/* ====================================================================== */
+function renderRec(){
+  const el=document.getElementById('view-rec');
+  const recs = SESS.filter(s=>pickOf(s.id)==='rec')
+    .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
+  if(!recs.length){ el.innerHTML=`<div class="empty"><b>No recordings queued</b>Mark sessions “Record” to watch them on-demand after the conference for extra CEUs.</div>`; return; }
+  const tot=recs.reduce((a,s)=>a+s.ce,0);
+  let html=`<div class="note no-print" style="margin:2px 4px 12px"><b>${recs.length}</b> recordings queued · <b>${fmtCE(tot)} CE</b> to earn on-demand. No time conflicts here — watch at your own pace.</div>`;
+  let curDay=null;
+  for(const s of recs){
+    if(s.day!==curDay){ curDay=s.day; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
+    html+=`<div class="scard is-rec" data-id="${s.id}">
+      <h3>${escapeHtml(s.title)}</h3>
+      <div class="meta"><span><b>${s.start||''}</b></span><span>${s.type}</span><span class="tag ce">${fmtCE(s.ce)} CE</span></div>
+      <div class="statusrow">
+        <button class="sbtn live" data-act="live"><span class="dot"></span>Move to Live</button>
+        <button class="sbtn skip" data-act="skip"><span class="dot"></span>Remove</button>
+      </div>
+    </div>`;
+  }
+  el.innerHTML=html;
+  el.querySelectorAll('.scard').forEach(card=>{
+    const id=card.dataset.id;
+    card.querySelectorAll('.sbtn').forEach(b=>b.onclick=()=>setPick(id,b.dataset.act));
+  });
+}
+
+/* ====================================================================== */
+/*  DASHBOARD                                                              */
+/* ====================================================================== */
+function renderDash(){
+  const el=document.getElementById('view-dash');
+  const t=totals();
+  const pct = v => Math.min(100, v/TARGET*100);
+  el.innerHTML=`
+   <div class="bigprogress">
+     <div class="hd"><div>Total CEUs</div><div class="tot">${fmtCE(t.total)}<small> / ${TARGET}</small></div></div>
+     <div class="bigbar">
+       <i class="p" style="width:${pct(t.prior)}%"></i>
+       <i class="l" style="width:${pct(t.live)}%"></i>
+       <i class="r" style="width:${pct(t.rec)}%"></i>
+       <i class="m" style="width:${pct(t.manual)}%"></i>
+     </div>
+     <div class="legend">
+       <span><i style="background:var(--gold)"></i>Already earned ${fmtCE(t.prior)}</span>
+       <span><i style="background:var(--live)"></i>Live ${fmtCE(t.live)}</span>
+       <span><i style="background:var(--rec)"></i>Recordings ${fmtCE(t.rec)}</span>
+       <span><i style="background:#7b61c9"></i>Other ${fmtCE(t.manual)}</span>
+     </div>
+     <div class="remaining ${t.remaining<=0?'done':''}">${t.remaining>0? fmtCE(t.remaining)+' CEU still needed to reach '+TARGET : '🎉 Goal met — '+TARGET+' CEUs reached for renewal!'}</div>
+   </div>
+
+   <div class="dash-grid">
+     <div class="stat prior"><div class="n">${fmtCE(t.prior)}</div><div class="l">Already earned</div></div>
+     <div class="stat live"><div class="n">${fmtCE(t.live)}</div><div class="l">Planned live (${SESS.filter(s=>pickOf(s.id)==='live').length})</div></div>
+     <div class="stat rec"><div class="n">${fmtCE(t.rec)}</div><div class="l">Planned recordings (${SESS.filter(s=>pickOf(s.id)==='rec').length})</div></div>
+     <div class="stat total"><div class="n">${fmtCE(t.total)}</div><div class="l">Grand total</div></div>
+   </div>
+
+   <div class="panel">
+     <h2>Already-earned CEUs (this renewal cycle)</h2>
+     <div class="field"><label>Credits earned before the conference</label>
+       <input type="number" id="priorInp" min="0" step="0.25" value="${t.prior}"></div>
+     <div class="note">Sarah said she already has ~10–15. Enter the exact number as you confirm it. AGACNP renewal requires <b>${TARGET}</b> CE hours.</div>
+   </div>
+
+   <div class="panel">
+     <h2>Other / external CEUs <span style="font-weight:400;color:var(--muted);font-size:12px">(track anything)</span></h2>
+     <div id="manualList"></div>
+     <button class="addbtn" id="addManual">+ Add a CEU entry</button>
+     <div class="note">Use this for journal CE, webinars, hands-on workshops, or any credits earned outside the session list above.</div>
+   </div>
+
+   <div class="panel no-print">
+     <h2>Backup &amp; transfer</h2>
+     <div class="tools">
+       <button id="exportBtn">⬇︎ Export backup</button>
+       <button id="importBtn">⬆︎ Import backup</button>
+       <button id="resetBtn">↺ Reset all</button>
+     </div>
+     <div class="note">Your plan is saved in this browser only. Export a backup file to keep it safe or move it to another device, then Import it there.</div>
+     <input type="file" id="fileInp" accept="application/json" style="display:none">
+   </div>`;
+
+  document.getElementById('priorInp').addEventListener('input',e=>{ state.prior=e.target.value; save(); renderRibbon();
+    // update totals text live without full rerender
+    const tt=totals(); el.querySelector('.bigprogress .tot').innerHTML=fmtCE(tt.total)+'<small> / '+TARGET+'</small>'; });
+  drawManual();
+  document.getElementById('addManual').onclick=()=>{ state.manual.push({label:'',ceu:''}); save(); drawManual(); };
+  document.getElementById('exportBtn').onclick=doExport;
+  document.getElementById('importBtn').onclick=()=>document.getElementById('fileInp').click();
+  document.getElementById('fileInp').onchange=doImport;
+  document.getElementById('resetBtn').onclick=()=>{ if(confirm('Erase all picks, rooms, and CEU entries? This cannot be undone.')){ state=JSON.parse(JSON.stringify(DEF)); save(); renderRibbon(); renderActive(); } };
+}
+function drawManual(){
+  const host=document.getElementById('manualList'); if(!host) return;
+  if(!state.manual.length){ host.innerHTML=`<div class="note" style="margin:0 0 8px">No external entries yet.</div>`; }
+  else host.innerHTML=state.manual.map((m,i)=>`
+    <div class="manual-item">
+      <input class="lbl" placeholder="Description (e.g. ECG webinar)" value="${escapeAttr(m.label||'')}" data-mi="${i}" data-f="label">
+      <input class="amt" type="number" min="0" step="0.25" placeholder="CE" value="${m.ceu||''}" data-mi="${i}" data-f="ceu">
+      <button data-del="${i}">×</button>
+    </div>`).join('');
+  host.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{
+    state.manual[+inp.dataset.mi][inp.dataset.f]=inp.value; save(); renderRibbon();
+    const tt=totals(); const tot=document.querySelector('.bigprogress .tot'); if(tot) tot.innerHTML=fmtCE(tt.total)+'<small> / '+TARGET+'</small>';
+  }));
+  host.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ state.manual.splice(+b.dataset.del,1); save(); drawManual(); renderRibbon(); renderDash(); });
+}
+function doExport(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='sarah-aanp-ceu-plan.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  toast('Backup downloaded');
+}
+function doImport(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const j=JSON.parse(r.result); state=Object.assign({},DEF,j); save(); renderRibbon(); renderActive(); toast('Backup imported'); }
+    catch(err){ alert('Could not read that file.'); } };
+  r.readAsText(f);
+}
+
+/* ====================================================================== */
+/*  PRINTABLE PLAN                                                         */
+/* ====================================================================== */
+function renderPlan(){
+  const el=document.getElementById('view-plan');
+  const t=totals();
+  const live = SESS.filter(s=>pickOf(s.id)==='live').sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
+  const recs = SESS.filter(s=>pickOf(s.id)==='rec').sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
+  const conf=liveConflicts();
+
+  let html=`
+   <div class="printhead">
+     <h1 style="margin:0 0 2px;font-size:20px">Sarah's AANP 2026 Conference Plan</h1>
+     <div style="color:#555;font-size:12px">AGACNP renewal · Target ${TARGET} CEUs · Las Vegas · Jun 23–27, 2026</div>
+   </div>
+   <div class="tools no-print" style="margin-bottom:12px">
+     <button id="printNow">🖨️ Print / Save as PDF</button>
+   </div>
+
+   <div class="bigprogress">
+     <div class="hd"><div>Projected total</div><div class="tot">${fmtCE(t.total)}<small> / ${TARGET}</small></div></div>
+     <div class="bigbar"><i class="p" style="width:${Math.min(100,t.prior/TARGET*100)}%"></i><i class="l" style="width:${Math.min(100,t.live/TARGET*100)}%"></i><i class="r" style="width:${Math.min(100,t.rec/TARGET*100)}%"></i><i class="m" style="width:${Math.min(100,t.manual/TARGET*100)}%"></i></div>
+     <div class="legend"><span><i style="background:var(--gold)"></i>Prior ${fmtCE(t.prior)}</span><span><i style="background:var(--live)"></i>Live ${fmtCE(t.live)}</span><span><i style="background:var(--rec)"></i>Rec ${fmtCE(t.rec)}</span><span><i style="background:#7b61c9"></i>Other ${fmtCE(t.manual)}</span></div>
+     <div class="remaining ${t.remaining<=0?'done':''}">${t.remaining>0?fmtCE(t.remaining)+' CEU still needed':'Goal met ✓'}</div>
+   </div>`;
+
+  if(!live.length && !recs.length){
+    html+=`<div class="empty"><b>Nothing planned yet</b>Mark some sessions Live or Record, then come back to print your plan.</div>`;
+    el.innerHTML=html; const p=document.getElementById('printNow'); if(p)p.onclick=()=>window.print(); return;
+  }
+
+  if(live.length){
+    html+=`<div class="day-head" style="margin-top:6px">▶ Attending Live · ${fmtCE(live.reduce((a,s)=>a+s.ce,0))} CE</div>`;
+    let curDay=null;
+    for(const s of live){
+      if(s.day!==curDay){ curDay=s.day; html+=`<div style="font-weight:700;font-size:12.5px;margin:9px 4px 5px;color:#0a6e5f">${s.day} ${s.date}</div>`; }
+      const r=roomOf(s);
+      html+=`<div class="scard is-live" style="margin-bottom:6px">
+        <h3 style="font-size:13.5px">${escapeHtml(s.title)}</h3>
+        <div class="meta" style="margin-bottom:0">
+          <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
+          ${r?`<span><b>Room ${escapeHtml(r)}</b></span>`:`<span style="color:#b00">Room: ____</span>`}
+          <span class="tag ce">${fmtCE(s.ce)} CE</span>
+          ${conf.has(s.id)?`<span class="tag conflict">⚠ overlap</span>`:''}
+        </div>
+      </div>`;
+    }
+  }
+  if(recs.length){
+    html+=`<div class="day-head" style="margin-top:14px">⏵ Watch by Recording · ${fmtCE(recs.reduce((a,s)=>a+s.ce,0))} CE</div>`;
+    for(const s of recs){
+      html+=`<div class="scard is-rec" style="margin-bottom:6px">
+        <h3 style="font-size:13.5px">${escapeHtml(s.title)}</h3>
+        <div class="meta" style="margin-bottom:0"><span>${s.day} ${s.date}</span><span>${s.type}</span><span class="tag ce">${fmtCE(s.ce)} CE</span></div>
+      </div>`;
+    }
+  }
+  if(state.manual.filter(m=>m.label||m.ceu).length){
+    html+=`<div class="day-head" style="margin-top:14px">＋ Other CEUs · ${fmtCE(t.manual)} CE</div>`;
+    for(const m of state.manual){ if(!(m.label||m.ceu)) continue;
+      html+=`<div class="scard" style="margin-bottom:6px"><h3 style="font-size:13.5px">${escapeHtml(m.label||'(untitled)')}</h3><div class="meta" style="margin-bottom:0"><span class="tag ce">${fmtCE(parseFloat(m.ceu)||0)} CE</span></div></div>`;
+    }
+  }
+  el.innerHTML=html;
+  const p=document.getElementById('printNow'); if(p)p.onclick=()=>window.print();
+}
+
+/* ====================================================================== */
+/*  ROUTER                                                                 */
+/* ====================================================================== */
+let activeTab='browse';
+function renderActive(){
+  if(activeTab==='browse') renderBrowse();
+  else if(activeTab==='live') renderLive();
+  else if(activeTab==='rec') renderRec();
+  else if(activeTab==='dash') renderDash();
+  else if(activeTab==='plan') renderPlan();
+}
+function show(tab){
+  activeTab=tab;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.querySelectorAll('.view').forEach(v=>{
+    const on = v.id==='view-'+tab;
+    v.style.display = on?'block':'none';
+    v.classList.toggle('print-on', tab==='plan' && v.id==='view-plan');
+  });
+  renderActive();
+  window.scrollTo(0,0);
+}
+document.getElementById('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) show(b.dataset.tab); });
+document.getElementById('printBtn').onclick=()=>{ show('plan'); setTimeout(()=>window.print(),250); };
+
+/* ---------- escaping ---------- */
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function escapeAttr(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- boot ---------- */
+renderRibbon();
+show('browse');
+</script>
+</body>
+</html>
