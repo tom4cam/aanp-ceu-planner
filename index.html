@@ -3,7 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>Sarah's AANP 2026 CEU Planner</title>
+<script>
+/* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
+window.APP_VERSION = '2026-06-20.1';
+(function(){
+  try{
+    fetch('version.txt?_='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.ok?r.text():null;})
+      .then(function(v){
+        if(!v) return; v=v.trim();
+        if(v && v!==window.APP_VERSION && !sessionStorage.getItem('vbust')){
+          sessionStorage.setItem('vbust','1');
+          location.replace(location.pathname+'?v='+encodeURIComponent(v));
+        } else { sessionStorage.removeItem('vbust'); }
+      }).catch(function(){});
+  }catch(e){}
+})();
+</script>
 <style>
 :root{
   --bg:#f3f7fc; --card:#fff; --ink:#16243a; --muted:#5d6b80;
@@ -226,7 +244,7 @@ main{padding:12px var(--gut) 80px}
 
 <div class="toast" id="toast"></div>
 
-<script src="data.js"></script>
+<script src="data.js?v=2026-06-20.1"></script>
 <script>
 "use strict";
 const TARGET = 75;
