@@ -7,7 +7,7 @@
 <title>Sarah's AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-20.1';
+window.APP_VERSION = '2026-06-20.2';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -244,7 +244,7 @@ main{padding:12px var(--gut) 80px}
 
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=2026-06-20.1"></script>
+<script src="data.js?v=2026-06-20.2"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -718,7 +718,7 @@ function renderDash(){
 
    <div class="panel no-print">
      <h2>🔄 Import from AANP app</h2>
-     <div class="tools"><button id="loadSarah" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections (one tap)</button></div>
+     <div class="tools"><button id="loadSarah" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections from AANP app</button></div>
      <div class="note" style="margin-top:6px">Loads the 23 sessions Sarah picked in the AANP app, as Live. (Or open <b>?plan=sarah</b> on the site to auto-load.)</div>
      <div class="tools" style="margin-top:8px"><button id="appImport">⬆︎ Import a file (.ics / JSON)</button></div>
      <div class="note">Pull Sarah's chosen sessions and room numbers in from the AANP Conference app. Accepts a calendar export (<b>.ics</b>) or a JSON file (Tom can prep one from the app capture). Matched sessions are marked <b>Live</b> and rooms fill in automatically — your existing picks are kept. Unmatched items are logged so nothing is lost silently.</div>
@@ -876,7 +876,7 @@ function renderPlan(){
    <div class="tools no-print" style="margin-bottom:12px">
      <button id="printNow">🖨️ Print / Save as PDF</button>
      <button id="icsBtn">📅 Add to Calendar</button>
-     <button id="loadSarahPlan" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections</button>
+     <button id="loadSarahPlan" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections from AANP app</button>
    </div>
 
    <div class="bigprogress">
