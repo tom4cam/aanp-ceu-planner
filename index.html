@@ -24,8 +24,8 @@ header.app{position:sticky;top:0;z-index:30;background:var(--brand);color:#fff;
   padding:10px 14px calc(10px + env(safe-area-inset-bottom,0)) ;padding-bottom:0}
 .app-title{display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:4px 2px 10px}
-.app-title h1{font-size:17px;margin:0;font-weight:650;letter-spacing:.2px}
-.app-title .sub{font-size:11.5px;opacity:.85;font-weight:400}
+.app-title h1{font-size:18.5px;margin:0;font-weight:650;letter-spacing:.2px}
+.app-title .sub{font-size:12.5px;opacity:.85;font-weight:400}
 .hbtn{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:8px;
   padding:7px 11px;font-size:12.5px;font-weight:600}
 .hbtn:active{background:rgba(255,255,255,.3)}
@@ -43,7 +43,7 @@ header.app{position:sticky;top:0;z-index:30;background:var(--brand);color:#fff;
 nav.tabs{display:flex;background:var(--brand);overflow-x:auto;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{flex:1 0 auto;background:transparent;border:0;color:rgba(255,255,255,.72);
-  padding:11px 13px 12px;font-size:12.5px;font-weight:600;white-space:nowrap;
+  padding:11px 14px 12px;font-size:13.5px;font-weight:600;white-space:nowrap;
   border-bottom:3px solid transparent}
 nav.tabs button.on{color:#fff;border-bottom-color:#ffe08a}
 
@@ -55,15 +55,15 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .filters input[type=search]{width:100%;border:1px solid var(--line);border-radius:9px;
   padding:10px 12px;font-size:15px;margin-bottom:8px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 11px;
-  font-size:12px;color:var(--muted);font-weight:600}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;
+  font-size:13px;color:var(--muted);font-weight:600}
 .chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk)}
 .filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .filter-row select{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff;color:var(--ink)}
-.count-line{font-size:12px;color:var(--muted);margin:2px 2px 10px}
+.count-line{font-size:13px;color:var(--muted);margin:2px 2px 10px}
 
 /* ---- Session card ---- */
-.day-head{font-size:13px;font-weight:750;color:var(--brand-dk);text-transform:uppercase;
+.day-head{font-size:14.5px;font-weight:750;color:var(--brand-dk);text-transform:uppercase;
   letter-spacing:.6px;margin:16px 4px 8px;display:flex;align-items:center;gap:8px}
 .day-head .pill{font-size:11px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
 .scard{background:var(--card);border:1px solid var(--line);border-radius:12px;
@@ -71,8 +71,8 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .scard.is-live{border-left:4px solid var(--live)}
 .scard.is-rec{border-left:4px solid var(--rec)}
 .scard.is-skip{opacity:.55}
-.scard h3{font-size:14.5px;margin:0 0 5px;font-weight:640;line-height:1.32}
-.meta{display:flex;flex-wrap:wrap;gap:5px 9px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.scard h3{font-size:16px;margin:0 0 5px;font-weight:640;line-height:1.34}
+.meta{display:flex;flex-wrap:wrap;gap:5px 9px;font-size:13px;color:var(--muted);margin-bottom:8px}
 .meta b{color:var(--ink);font-weight:600}
 .tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;
   text-transform:uppercase;letter-spacing:.3px}
@@ -86,8 +86,8 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 
 /* status buttons */
 .statusrow{display:flex;gap:6px;margin-top:4px}
-.sbtn{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 4px;
-  font-size:12px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:4px}
+.sbtn{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px 4px;
+  font-size:13.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px}
 .sbtn .dot{width:9px;height:9px;border-radius:50%}
 .sbtn.live .dot{background:var(--live)} .sbtn.rec .dot{background:var(--rec)} .sbtn.skip .dot{background:var(--skip)}
 .sbtn.on.live{background:var(--live-soft);border-color:var(--live);color:var(--live)}
@@ -95,16 +95,29 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .sbtn.on.skip{background:#eef1f4;border-color:var(--skip);color:#5e6b78}
 
 .roomrow{display:flex;align-items:center;gap:7px;margin-top:8px}
-.roomrow label{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
-.roomrow input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px;min-width:0}
+.roomrow label{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.roomrow input{flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-size:14px;min-width:0}
 .recflip{font-size:11px;color:var(--rec);background:none;border:0;text-decoration:underline;padding:4px 2px}
 
 /* ---- Schedule timeline ---- */
 .slot{margin-bottom:10px}
 .slot.conflict .scard{border-left-color:var(--warn)}
-.transition{font-size:11.5px;color:var(--warn);font-weight:600;margin:-2px 4px 8px;
-  display:flex;align-items:center;gap:6px}
-.transition.ok{color:var(--muted);font-weight:500}
+.transition{font-size:12.5px;color:var(--muted);font-weight:600;margin:-2px 4px 8px;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.transition.far{color:var(--warn);background:var(--warn-soft);border-radius:9px;padding:8px 10px;display:block}
+.transition .trrooms{font-weight:500;color:#7a3d2a;margin-top:2px}
+.tag.room{background:var(--brand-soft);color:var(--brand-dk);text-transform:none;letter-spacing:0;font-weight:700}
+.suggest{margin:-4px 4px 10px;display:flex;flex-direction:column;gap:5px}
+.sg-h{font-size:11.5px;color:var(--muted);font-weight:600}
+.sg{text-align:left;border:1px solid var(--rec);background:var(--rec-soft);color:var(--brand-dk);
+  border-radius:9px;padding:8px 10px;font-size:12.5px;font-weight:600;line-height:1.35}
+.sg:active{filter:brightness(.95)}
+.daymap{display:flex;flex-wrap:wrap;gap:10px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:11px;margin:0 0 12px;box-shadow:var(--shadow)}
+.lvlmap{flex:1;min-width:120px;max-width:190px}
+.lvlmap-h{font-size:11.5px;font-weight:700;color:var(--brand-dk);margin-bottom:3px;text-align:center}
+.lvlmap svg{background:#f0f5fb;border:1px solid var(--line);border-radius:8px;display:block}
+.daymap-note{flex-basis:100%;font-size:11.5px;color:var(--muted);line-height:1.5}
 
 /* ---- Dashboard ---- */
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
@@ -138,7 +151,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .addbtn{background:var(--brand-soft);color:var(--brand-dk);border:1px dashed var(--brand);
   border-radius:9px;padding:9px;width:100%;font-size:13px;font-weight:600;margin-top:3px}
 
-.hp{font-size:13.5px;color:var(--ink);line-height:1.6}
+.hp{font-size:14.5px;color:var(--ink);line-height:1.62}
 .hp ul{margin:0;padding-left:18px} .hp li{margin-bottom:7px}
 .legrow{display:flex;align-items:center;gap:8px;margin:5px 0 2px}
 .legrow .dot{width:11px;height:11px;border-radius:50%;flex:none}
@@ -153,7 +166,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .tools button{flex:1;min-width:120px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px;font-size:12.5px;font-weight:600;color:var(--ink)}
-.note{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.55}
 
 /* ---- Print plan ---- */
 .printhead{display:none}
@@ -189,7 +202,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 <nav class="tabs" id="tabs">
   <button data-tab="browse" class="on">Browse</button>
   <button data-tab="live">Live Schedule</button>
-  <button data-tab="rec">Recordings</button>
+  <button data-tab="rec">Watch Later</button>
   <button data-tab="dash">CEU Dashboard</button>
   <button data-tab="plan">My Plan</button>
   <button data-tab="help">ℹ️ Help</button>
@@ -217,6 +230,22 @@ const VENUE = {
   maps:"https://www.google.com/maps/search/?api=1&query=The%20Venetian%20Convention%20and%20Expo%20Center%20Las%20Vegas",
   ondemand:"https://nc.aanp.org/ce"
 };
+// Real room coordinates (level + normalized x/y on that level's floor plan), from the AANP app bundle.
+const ROOMGEO = {"Level 4, Zeno 4601":{"lvl":4,"x":0.3104,"y":0.7532},"Level 5, Palazzo A-F":{"lvl":5,"x":0.6065,"y":0.3156},"Level 5, Palazzo B":{"lvl":5,"x":0.5974,"y":0.174},"Level 4, Zeno 4701":{"lvl":4,"x":0.4805,"y":0.7558},"Level 4, Lando 4201":{"lvl":4,"x":0.3247,"y":0.3338},"Level 4, Lando 4304":{"lvl":4,"x":0.5506,"y":0.4234},"Level 4, Marcello 4501":{"lvl":4,"x":0.3143,"y":0.6403},"Level 4, Marcello 4503":{"lvl":4,"x":0.474,"y":0.626},"Level 4, Marcello 4505":{"lvl":4,"x":0.6208,"y":0.6273},"Level 3, Lido 3103":{"lvl":3,"x":0.4706,"y":0.2558},"Level 3, Lido 3105":{"lvl":3,"x":0.6049,"y":0.2609},"Level 3, Murano 3201 B":{"lvl":3,"x":0.3389,"y":0.3939},"Level 3, Murano 3301 A":{"lvl":3,"x":0.3402,"y":0.4412},"Level 3, Murano 3303":{"lvl":3,"x":0.4744,"y":0.4642},"Level 3, Murano 3305":{"lvl":3,"x":0.6023,"y":0.454},"Level 3, San Polo 3503":{"lvl":3,"x":0.4744,"y":0.6624},"Level 3, Toscana 3601":{"lvl":3,"x":0.3223,"y":0.7532},"Level 3, Toscana 3701":{"lvl":3,"x":0.4834,"y":0.7609},"Level 4,  Zeno 4701":{"lvl":4,"x":0.4783,"y":0.7417},"Level 4, Delfino 4001":{"lvl":4,"x":0.3223,"y":0.1228},"Level 4, Delfino 4104":{"lvl":4,"x":0.5486,"y":0.2174},"Level 2, Expo Upper Lobby":{"lvl":2,"x":0.8159,"y":0.6317},"Level 2, Hall A":{"lvl":2,"x":0.4373,"y":0.8529},"Level 2, Hall C":{"lvl":2,"x":0.4207,"y":0.3926},"Level 3, Lido 3001 B":{"lvl":3,"x":0.3363,"y":0.202},"Level 3, Lido 3002":{"lvl":3,"x":0.4079,"y":0.1726},"Level 3, Lido 3101 A":{"lvl":3,"x":0.335,"y":0.234}};
+const SARAH_PICKS = ["26.1.058","26.1.068","26.2.006","26.2.031","26.2.046","26.2.070","26.2.112","26.2.127","26.3.014","26.3.040","26.3.070","26.3.097","26.3.120","26.4.013","26.4.028","26.4.045","26.4.098","26.4.119","26.5.116","26.1.078","26.3.083","26.5.115","26.2.005"];
+
+function geoOf(roomStr){ if(!roomStr) return null; if(ROOMGEO[roomStr]) return ROOMGEO[roomStr];
+  const k=Object.keys(ROOMGEO).find(r=>r.replace(/\s+/g,' ').toLowerCase()===roomStr.replace(/\s+/g,' ').toLowerCase()); return k?ROOMGEO[k]:null; }
+function levelOf(roomStr){ const m=/Level\s*(\d+)/i.exec(roomStr||''); return m?+m[1]:null; }
+// Distance between two room strings. Returns {d, far, sameLevel} where d is a rough walk score.
+function roomDistance(a, b){
+  if(!a||!b) return null;
+  const ga=geoOf(a), gb=geoOf(b);
+  const la=ga?ga.lvl:levelOf(a), lb=gb?gb.lvl:levelOf(b);
+  if(la!=null && lb!=null && la!==lb){ return {d: 1.0 + 0.6*Math.abs(la-lb), far:true, sameLevel:false, levels:[la,lb]}; }
+  if(ga && gb){ const dx=ga.x-gb.x, dy=ga.y-gb.y; const d=Math.sqrt(dx*dx+dy*dy); return {d, far:d>0.34, sameLevel:true, levels:[la,lb]}; }
+  return null; // unknown geometry
+}
 const SESS = (window.SESSIONS||[]).slice();
 const byId = {}; SESS.forEach(s=>byId[s.id]=s);
 const DAYS = [...new Set(SESS.map(s=>s.day))]
@@ -346,7 +375,7 @@ function renderBrowse(){
        <select id="fStatus">
          <option value="">Any status</option>
          <option value="live" ${bf.status==='live'?'selected':''}>🟢 Attend live</option>
-         <option value="rec" ${bf.status==='rec'?'selected':''}>🔵 Watch recording</option>
+         <option value="rec" ${bf.status==='rec'?'selected':''}>🔵 Watch later</option>
          <option value="none" ${bf.status==='none'?'selected':''}>Undecided</option>
          <option value="skip" ${bf.status==='skip'?'selected':''}>Skipped</option>
        </select>
@@ -426,28 +455,22 @@ function cardHTML(s,withControls){
     ${withControls?`
     <div class="statusrow">
       <button class="sbtn live ${p==='live'?'on':''}" data-act="live"><span class="dot"></span>Live</button>
-      <button class="sbtn rec ${p==='rec'?'on':''}" data-act="rec" ${rec?'':'data-norec="1"'}><span class="dot"></span>Record</button>
+      <button class="sbtn rec ${p==='rec'?'on':''}" data-act="rec"><span class="dot"></span>Watch Later</button>
       <button class="sbtn skip ${p==='skip'?'on':''}" data-act="skip"><span class="dot"></span>Skip</button>
     </div>
     <div class="roomrow">
       <label>Room</label>
       <input type="text" placeholder="add room #" value="${escapeAttr(roomOf(s))}" data-room="${s.id}">
       <a class="recflip" href="${VENUE.floorplan}" target="_blank" rel="noopener">📍 map</a>
-      <button class="recflip" data-recflip="${s.id}">${rec?'mark live-only':'mark recordable'}</button>
     </div>`:''}
   </div>`;
 }
 function bindCards(host){
   host.querySelectorAll('.scard').forEach(card=>{
     const id=card.dataset.id;
-    card.querySelectorAll('.sbtn').forEach(b=>b.onclick=()=>{
-      if(b.dataset.act==='rec' && b.dataset.norec){ toast("This session has no recording — mark it recordable first."); return; }
-      setPick(id,b.dataset.act);
-    });
+    card.querySelectorAll('.sbtn').forEach(b=>b.onclick=()=>setPick(id,b.dataset.act));
     const rm=card.querySelector('[data-room]');
     if(rm) rm.addEventListener('input',e=>{ const v=e.target.value; if(v) state.rooms[id]=v; else delete state.rooms[id]; save(); /*light*/ });
-    const rf=card.querySelector('[data-recflip]');
-    if(rf) rf.onclick=()=>{ state.recOverride[id]=!isRecordable(byId[id]); save(); renderActive(); };
   });
 }
 
@@ -460,37 +483,80 @@ function renderLive(){
     .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
   if(!live.length){ el.innerHTML=`<div class="empty"><b>No live sessions yet</b>Tap “Live” on a session in Browse to build your daily schedule.</div>`; return; }
   const conf=liveConflicts();
-  let html=`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Tight transitions (&lt;25 min between rooms) are noted so you can plan the walk. 🦶</div>`;
+  let html=`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Walks between back-to-back rooms are scored from the real venue map — <b>far walks</b> (different floor or long distance) come with closer suggestions. 🦶</div>`;
   let curDay=null, prev=null;
   for(const s of live){
-    if(s.day!==curDay){ curDay=s.day; prev=null; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
-    // transition note
-    if(prev && prev.endMin!=null && s.startMin!=null){
-      const gap=s.startMin-prev.endMin;
-      if(gap>=0 && gap<25){
-        const r1=roomOf(prev), r2=roomOf(s);
-        const rtxt=(r1||r2)?` (${r1||'?'} → ${r2||'?'})`:'';
-        html+=`<div class="transition">⏱ ${gap} min between sessions${rtxt} — tight walk</div>`;
-      }
+    if(s.day!==curDay){
+      curDay=s.day; prev=null;
+      html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`;
+      html+=dayMapHTML(live.filter(x=>x.day===curDay));
     }
+    if(prev && prev.endMin!=null && s.startMin!=null) html+=transitionHTML(prev,s);
     const isConf=conf.has(s.id);
-    html+=`<div class="slot ${isConf?'conflict':''}">`;
-    html+=cardLiveHTML(s,isConf);
-    html+=`</div>`;
+    html+=`<div class="slot ${isConf?'conflict':''}">`+cardLiveHTML(s,isConf)+`</div>`;
     prev=s;
   }
   el.innerHTML=html;
   el.querySelectorAll('[data-room]').forEach(rm=>{
     rm.addEventListener('input',e=>{ const v=e.target.value; if(v) state.rooms[rm.dataset.room]=v; else delete state.rooms[rm.dataset.room]; save(); });
   });
-  el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>{ setPick(b.dataset.drop,'live'); /*toggles off*/ });
+  el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>{ setPick(b.dataset.drop,'live'); });
+  el.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{
+    setPick(b.dataset.from,'rec'); state.picks[b.dataset.swap]='live'; save(); renderRibbon(); renderActive();
+    toast('Swapped to the closer session (old one → Watch Later)');
+  });
+}
+/* walk score between two live sessions + closer-room suggestions */
+function transitionHTML(prev,s){
+  const gap=s.startMin-prev.endMin;
+  const r1=roomOf(prev), r2=roomOf(s);
+  const rtxt=(r1||r2)?`${escapeHtml(r1||'?')} → ${escapeHtml(r2||'?')}`:'';
+  const dist=roomDistance(r1,r2);
+  const far = dist && dist.far;
+  let out='';
+  if(far){
+    const why = !dist.sameLevel ? `different floor (L${dist.levels[0]} → L${dist.levels[1]}, elevator)` : 'long walk on the same floor';
+    out=`<div class="transition far">🦶 <b>Far walk</b> — ${why}${(gap>=0&&gap<999)?`, only ${gap} min between`:''}.<div class="trrooms">${rtxt}</div></div>`;
+    const alts=closerAlternatives(r1,s,3);
+    if(alts.length){
+      out+=`<div class="suggest"><div class="sg-h">Closer options at ${s.start} (tap to switch; current → Watch Later):</div>`+
+        alts.map(a=>`<button class="sg" data-swap="${a.o.id}" data-from="${s.id}"><b>${escapeHtml(roomOf(a.o))}</b> · ${escapeHtml(truncate(a.o.title,34))} · ${fmtCE(a.o.ce)} CE</button>`).join('')+
+        `</div>`;
+    }
+  } else if(gap>=0 && gap<20 && rtxt){
+    out=`<div class="transition">⏱ ${gap} min between · ${rtxt}</div>`;
+  }
+  return out;
+}
+function closerAlternatives(anchorRoom, s, maxN){
+  const cur=roomDistance(anchorRoom, roomOf(s)); if(!cur) return [];
+  return SESS.filter(o=>o.id!==s.id && o.day===s.day && o.startMin===s.startMin && pickOf(o.id)!=='live' && roomOf(o))
+    .map(o=>({o,dist:roomDistance(anchorRoom,roomOf(o))}))
+    .filter(x=>x.dist && x.dist.d < cur.d-0.03)
+    .sort((a,b)=>a.dist.d-b.dist.d).slice(0,maxN);
+}
+/* schematic per-day floor map from real room coordinates */
+function dayMapHTML(daySessions){
+  const pts=daySessions.map((s,i)=>({n:i+1,g:geoOf(roomOf(s)),room:roomOf(s)})).filter(p=>p.g);
+  if(pts.length<2) return '';
+  const levels=[...new Set(pts.map(p=>p.g.lvl))].sort((a,b)=>a-b);
+  const W=150,H=116;
+  const boxes=levels.map(lv=>{
+    const lp=pts.filter(p=>p.g.lvl===lv).sort((a,b)=>a.n-b.n);
+    let line='';
+    for(let i=0;i<lp.length-1;i++){const a=lp[i].g,b=lp[i+1].g;
+      line+=`<line x1="${(a.x*W)|0}" y1="${(a.y*H)|0}" x2="${(b.x*W)|0}" y2="${(b.y*H)|0}" stroke="#7fb0e6" stroke-width="1.6" stroke-dasharray="3 2"/>`;}
+    const dots=lp.map(p=>`<circle cx="${(p.g.x*W)|0}" cy="${(p.g.y*H)|0}" r="9.5" fill="var(--brand)"/><text x="${(p.g.x*W)|0}" y="${(p.g.y*H)+3|0}" font-size="10" fill="#fff" text-anchor="middle" font-weight="700">${p.n}</text>`).join('');
+    return `<div class="lvlmap"><div class="lvlmap-h">Level ${lv}</div><svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">${line}${dots}</svg></div>`;
+  }).join('');
+  return `<div class="daymap no-print">${boxes}<div class="daymap-note">① ② ③ = your session order. Lines = the walk on each floor; sessions split across floors mean an elevator trip — plan extra time. 🦶</div></div>`;
 }
 function cardLiveHTML(s,isConf){
   return `<div class="scard is-live" data-id="${s.id}">
     <h3>${escapeHtml(s.title)}</h3>
     <div class="meta">
       <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
-      <span>${s.type}</span>
+      ${roomOf(s)?`<span class="tag room">📍 ${escapeHtml(roomOf(s))}</span>`:''}
       <span class="tag ce">${fmtCE(s.ce)} CE</span>
       ${isConf?`<span class="tag conflict">⚠ Overlap</span>`:''}
     </div>
@@ -510,10 +576,10 @@ function renderRec(){
   const el=document.getElementById('view-rec');
   const recs = SESS.filter(s=>pickOf(s.id)==='rec')
     .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
-  if(!recs.length){ el.innerHTML=`<div class="empty"><b>No recordings queued</b>Mark sessions “Record” to watch them on-demand after the conference for extra CEUs.</div>`; return; }
+  if(!recs.length){ el.innerHTML=`<div class="empty"><b>Nothing saved to Watch Later</b>Tap “Watch Later” on a session to catch it on-demand after the conference for extra CEUs.</div>`; return; }
   const tot=recs.reduce((a,s)=>a+s.ce,0);
   const withLinks=recs.filter(s=>recUrlOf(s.id)).length;
-  let html=`<div class="note no-print" style="margin:2px 4px 12px"><b>${recs.length}</b> recordings queued · <b>${fmtCE(tot)} CE</b> to earn on-demand · ${withLinks} link${withLinks===1?'':'s'} saved. No time conflicts here — watch at your own pace.</div>
+  let html=`<div class="note no-print" style="margin:2px 4px 12px"><b>${recs.length}</b> saved to Watch Later · <b>${fmtCE(tot)} CE</b> to earn on-demand · ${withLinks} link${withLinks===1?'':'s'} saved. No time conflicts here — watch at your own pace.</div>
     <div class="tools no-print" style="margin-bottom:12px">
       <button id="recPortal" onclick="window.open('${VENUE.ondemand}','_blank')">▶ AANP on-demand portal</button>
       <button id="recImport">⬆︎ Import recording links</button>
@@ -623,7 +689,9 @@ function renderDash(){
 
    <div class="panel no-print">
      <h2>🔄 Import from AANP app</h2>
-     <div class="tools"><button id="appImport">⬆︎ Import schedule &amp; rooms</button></div>
+     <div class="tools"><button id="loadSarah" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections (one tap)</button></div>
+     <div class="note" style="margin-top:6px">Loads the 23 sessions Sarah picked in the AANP app, as Live. (Or open <b>?plan=sarah</b> on the site to auto-load.)</div>
+     <div class="tools" style="margin-top:8px"><button id="appImport">⬆︎ Import a file (.ics / JSON)</button></div>
      <div class="note">Pull Sarah's chosen sessions and room numbers in from the AANP Conference app. Accepts a calendar export (<b>.ics</b>) or a JSON file (Tom can prep one from the app capture). Matched sessions are marked <b>Live</b> and rooms fill in automatically — your existing picks are kept. Unmatched items are logged so nothing is lost silently.</div>
      <input type="file" id="appFile" accept=".ics,.json,.csv,text/calendar,application/json" style="display:none">
    </div>
@@ -649,6 +717,7 @@ function renderDash(){
   document.getElementById('fileInp').onchange=doImport;
   document.getElementById('appImport').onclick=()=>document.getElementById('appFile').click();
   document.getElementById('appFile').onchange=importAppData;
+  document.getElementById('loadSarah').onclick=loadSarahPicks;
   document.getElementById('resetBtn').onclick=()=>{ if(confirm('Erase all picks, rooms, and CEU entries? This cannot be undone.')){ state=JSON.parse(JSON.stringify(DEF)); save(); renderRibbon(); renderActive(); } };
 }
 function drawManual(){
@@ -727,6 +796,13 @@ function importAppData(e){
     if(unmatched.length) console.log('AANP import — unmatched titles:', unmatched);
   };
   r.readAsText(f);
+}
+
+/* ---- one-tap: load Sarah's captured AANP selections as Live ---- */
+function loadSarahPicks(){
+  let n=0; SARAH_PICKS.forEach(code=>{ if(byId[code]){ state.picks[code]='live'; n++; } });
+  save(); renderRibbon(); renderActive();
+  toast(`Loaded ${n} of Sarah's sessions as Live`);
 }
 
 /* ====================================================================== */
@@ -897,6 +973,13 @@ function escapeAttr(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'
 /* ---------- boot ---------- */
 renderRibbon();
 show('browse');
+try{
+  if(new URLSearchParams(location.search).get('plan')==='sarah'){
+    loadSarahPicks();
+    history.replaceState(null,'',location.pathname);
+    show('live');
+  }
+}catch(e){}
 </script>
 </body>
 </html>
