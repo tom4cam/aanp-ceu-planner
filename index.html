@@ -82,6 +82,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .tag.rec{background:var(--rec-soft);color:var(--rec)}
 .tag.conflict{background:var(--warn-soft);color:var(--warn)}
 .tag.topic{background:#eef2f7;color:#55657a;text-transform:none;letter-spacing:0;font-weight:600}
+.tag.tagfeat{background:#fbeed2;color:#8a6608;text-transform:none;letter-spacing:0;font-weight:700}
 
 /* status buttons */
 .statusrow{display:flex;gap:6px;margin-top:4px}
@@ -214,8 +215,22 @@ const byId = {}; SESS.forEach(s=>byId[s.id]=s);
 const DAYS = [...new Set(SESS.map(s=>s.day))]
   .sort((a,b)=> (SESS.find(s=>s.day===a).dayOrder) - (SESS.find(s=>s.day===b).dayOrder));
 const TYPES = [...new Set(SESS.map(s=>s.type))].sort();
-const TOPICS = (()=>{ const t=[...new Set(SESS.map(s=>s.topic))].filter(Boolean).sort();
+// Featured tags pinned at the top of the filter (a session may carry several).
+const FEATURED = [
+  {label:"★ Neuro", tag:"Neurology"},
+  {label:"★ Acute Care", tag:"Acute Care"},
+  {label:"★ Pharmacology", tag:"Pharmacology"},
+  {label:"★ University Teaching", tag:"University Teaching"},
+  {label:"★ Extra Cost Sessions", tag:"Extra Cost"},
+  {label:"★ Optional (no CEUs)", tag:"Optional (no CEUs)"},
+  {label:"★ Sponsored Meals", tag:"Sponsored Meals"},
+];
+const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
+const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
+// short display labels for tag pills on cards
+const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
+function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
@@ -302,7 +317,7 @@ function renderBrowse(){
        ${DAYS.map(d=>`<button class="chip ${bf.day===d?'on':''}" data-day="${d}">${d.slice(0,3)} ${dateFor(d)}</button>`).join('')}
      </div>
      <div class="filter-row">
-       <select id="fTopic"><option value="">All topics</option>${TOPICS.map(t=>`<option ${bf.topic===t?'selected':''}>${t}</option>`).join('')}</select>
+       <select id="fTopic"><option value="">All topics &amp; tags</option><optgroup label="Featured">${FEATURED.map(f=>`<option value="${escapeAttr(f.tag)}" ${bf.topic===f.tag?'selected':''}>${f.label}</option>`).join('')}</optgroup><optgroup label="Clinical topics">${CLINICAL_TAGS.map(t=>`<option value="${escapeAttr(t)}" ${bf.topic===t?'selected':''}>${t}</option>`).join('')}</optgroup></select>
        <select id="fType"><option value="">All types</option>${TYPES.map(t=>`<option ${bf.type===t?'selected':''}>${t}</option>`).join('')}</select>
        <select id="fStatus">
          <option value="">Any status</option>
@@ -331,7 +346,7 @@ function dateFor(day){ const s=SESS.find(x=>x.day===day); return s?s.date:''; }
 
 function matchFilter(s){
   if(bf.day && s.day!==bf.day) return false;
-  if(bf.topic && s.topic!==bf.topic) return false;
+  if(bf.topic && !(s.tags||[]).includes(bf.topic)) return false;
   if(bf.type && s.type!==bf.type) return false;
   if(bf.status){
     const p=pickOf(s.id);
@@ -344,7 +359,7 @@ function matchFilter(s){
   if(bf.rec==='norec' && isRecordable(s)) return false;
   if(bf.q){
     const q=bf.q.toLowerCase();
-    if(!(s.title.toLowerCase().includes(q) || (s.topic||'').toLowerCase().includes(q) || (s.type||'').toLowerCase().includes(q) || (s.code||'').toLowerCase().includes(q))) return false;
+    if(!(s.title.toLowerCase().includes(q) || (s.tags||[]).join(' ').toLowerCase().includes(q) || (s.type||'').toLowerCase().includes(q) || (s.code||'').toLowerCase().includes(q))) return false;
   }
   return true;
 }
@@ -378,11 +393,10 @@ function cardHTML(s,withControls){
     <h3>${escapeHtml(s.title)}</h3>
     <div class="meta">
       <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
-      ${s.topic?`<span class="tag topic">${escapeHtml(s.topic)}</span>`:''}
+      ${(s.tags||[]).map(t=>`<span class="tag ${FEAT_TAGS.has(t)?'tagfeat':'topic'}">${escapeHtml(tagPillLabel(s,t))}</span>`).join('')}
       <span>${s.type}</span>
       ${s.level?`<span>${s.level}</span>`:''}
       <span class="tag ce">${fmtCE(s.ce)} CE</span>
-      ${s.fee?`<span class="tag fee">Paid</span>`:''}
       ${rec?`<span class="tag rec">Rec ✓</span>`:`<span class="tag norec">Live only</span>`}
     </div>
     ${withControls?`
@@ -669,8 +683,9 @@ function renderHelp(){
    <div class="panel">
      <h2>1 · Browse &amp; choose sessions</h2>
      <ul class="hp">
-       <li><b>Filter</b> by day (chips at top), <b>topic</b> (e.g. Neurology, Cardiology, Critical Care), session type, status, free/paid, or recording availability.</li>
-       <li><b>Search</b> the box matches session titles, topics, and types.</li>
+       <li><b>Filter</b> by day (chips at top) or by <b>topic / tag</b>. The dropdown pins your <b>★ Featured</b> filters first — Neuro, Acute Care, Pharmacology, University Teaching, Extra Cost Sessions, Optional (no CEUs), Sponsored Meals — then lists all clinical topics. Also filter by type, status, free/paid, or recording availability.</li>
+       <li>Sessions can carry <b>several tags</b>, so an acute-care neuro talk shows up under both Acute Care and Neuro. Tags appear as small pills on each card (gold = featured).</li>
+       <li><b>Search</b> matches session titles, tags, and types.</li>
        <li>On each session tap one button:
          <div class="legrow"><span class="dot live"></span><b>Live</b> — you'll be in the room</div>
          <div class="legrow"><span class="dot rec"></span><b>Record</b> — watch on-demand later for extra CEUs</div>
