@@ -114,10 +114,11 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 .sg:active{filter:brightness(.95)}
 .daymap{display:flex;flex-wrap:wrap;gap:10px;background:var(--card);border:1px solid var(--line);
   border-radius:12px;padding:11px;margin:0 0 12px;box-shadow:var(--shadow)}
-.lvlmap{flex:1;min-width:120px;max-width:190px}
-.lvlmap-h{font-size:11.5px;font-weight:700;color:var(--brand-dk);margin-bottom:3px;text-align:center}
-.lvlmap svg{background:#f0f5fb;border:1px solid var(--line);border-radius:8px;display:block}
-.daymap-note{flex-basis:100%;font-size:11.5px;color:var(--muted);line-height:1.5}
+.lvlmap{flex:1 1 240px;min-width:200px;max-width:340px}
+.lvlmap-h{font-size:12.5px;font-weight:700;color:var(--brand-dk);margin-bottom:3px;text-align:center}
+.lvlmap svg{background:#eef3f9;border:1px solid var(--line);border-radius:8px;display:block;width:100%}
+.lvlmap-key{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45}
+.daymap-note{flex-basis:100%;font-size:12px;color:var(--muted);line-height:1.5}
 
 /* ---- Dashboard ---- */
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
@@ -535,21 +536,25 @@ function closerAlternatives(anchorRoom, s, maxN){
     .filter(x=>x.dist && x.dist.d < cur.d-0.03)
     .sort((a,b)=>a.dist.d-b.dist.d).slice(0,maxN);
 }
-/* schematic per-day floor map from real room coordinates */
+/* per-day floor map: real venue floorplan with your room pins overlaid */
+const LVL_IMG={2:'floorplans/level2.jpg',3:'floorplans/level3.jpg',4:'floorplans/level4.jpg',5:'floorplans/level5.jpg'};
 function dayMapHTML(daySessions){
   const pts=daySessions.map((s,i)=>({n:i+1,g:geoOf(roomOf(s)),room:roomOf(s)})).filter(p=>p.g);
   if(pts.length<2) return '';
   const levels=[...new Set(pts.map(p=>p.g.lvl))].sort((a,b)=>a-b);
-  const W=150,H=116;
   const boxes=levels.map(lv=>{
     const lp=pts.filter(p=>p.g.lvl===lv).sort((a,b)=>a.n-b.n);
+    const img=LVL_IMG[lv];
+    const bg=img?`<image href="${img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>`:'';
     let line='';
     for(let i=0;i<lp.length-1;i++){const a=lp[i].g,b=lp[i+1].g;
-      line+=`<line x1="${(a.x*W)|0}" y1="${(a.y*H)|0}" x2="${(b.x*W)|0}" y2="${(b.y*H)|0}" stroke="#7fb0e6" stroke-width="1.6" stroke-dasharray="3 2"/>`;}
-    const dots=lp.map(p=>`<circle cx="${(p.g.x*W)|0}" cy="${(p.g.y*H)|0}" r="9.5" fill="var(--brand)"/><text x="${(p.g.x*W)|0}" y="${(p.g.y*H)+3|0}" font-size="10" fill="#fff" text-anchor="middle" font-weight="700">${p.n}</text>`).join('');
-    return `<div class="lvlmap"><div class="lvlmap-h">Level ${lv}</div><svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet">${line}${dots}</svg></div>`;
+      line+=`<line x1="${(a.x*100).toFixed(1)}" y1="${(a.y*100).toFixed(1)}" x2="${(b.x*100).toFixed(1)}" y2="${(b.y*100).toFixed(1)}" stroke="#ff7a1a" stroke-width="1.3" stroke-dasharray="3 2"/>`;}
+    const dots=lp.map(p=>{const cx=(p.g.x*100).toFixed(1),cy=(p.g.y*100).toFixed(1);
+      return `<circle cx="${cx}" cy="${cy}" r="4.4" fill="var(--brand)" stroke="#fff" stroke-width="1.1"/><text x="${cx}" y="${(p.g.y*100+1.6).toFixed(1)}" font-size="4.6" fill="#fff" text-anchor="middle" font-weight="700">${p.n}</text>`;}).join('');
+    return `<div class="lvlmap"><div class="lvlmap-h">Level ${lv}</div><svg viewBox="0 0 100 100" width="100%">${bg}${line}${dots}</svg>`+
+      `<div class="lvlmap-key">${lp.map(p=>`${p.n}. ${escapeHtml(p.room.replace(/^Level \d+,\s*/,''))}`).join(' · ')}</div></div>`;
   }).join('');
-  return `<div class="daymap no-print">${boxes}<div class="daymap-note">① ② ③ = your session order. Lines = the walk on each floor; sessions split across floors mean an elevator trip — plan extra time. 🦶</div></div>`;
+  return `<div class="daymap no-print">${boxes}<div class="daymap-note">Numbered pins = your sessions, in order, on the real venue floor plan. Orange line = the walk on that floor; pins on different floors mean an elevator trip — plan extra time. 🦶</div></div>`;
 }
 function cardLiveHTML(s,isConf){
   return `<div class="scard is-live" data-id="${s.id}">
