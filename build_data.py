@@ -72,6 +72,8 @@ def clinical_topic(title):
 def build():
     doc = open(SRC, encoding='utf-8', errors='replace').read()
     cards = re.split(r'<div class="card filterParent"', doc)[1:]
+    rooms_path = os.path.join(HERE, "rooms.json")   # code -> room, from official app event bundle
+    ROOMS = json.load(open(rooms_path)) if os.path.exists(rooms_path) else {}
     out = []
     for i, c in enumerate(cards):
         hm = re.search(r'<h6>(.*?)</h6>', c, re.S)
@@ -109,7 +111,7 @@ def build():
             "day": day, "date": date, "dayOrder": DAYORDER.get(day, 9),
             "start": start, "end": end, "startMin": mins(start), "endMin": mins(end),
             "type": typ, "level": level, "ce": ce, "fee": fee, "feeAmt": fee_amt,
-            "topic": topic, "tags": tags,
+            "topic": topic, "tags": tags, "room": ROOMS.get(code, ""),
             "recordable": typ in REC_DEFAULT_TRUE,
         })
 
