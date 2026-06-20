@@ -809,6 +809,30 @@ function importAppData(e){
   r.readAsText(f);
 }
 
+/* ---- export Live plan to a calendar (.ics) — safe "push to her phone" ---- */
+function icsEsc(s){ return (s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'); }
+function icsDT(date, mins){ const [mm,dd]=date.split('/').map(Number); const p=n=>String(n).padStart(2,'0');
+  return `2026${p(mm)}${p(dd)}T${p(Math.floor(mins/60))}${p(mins%60)}00`; }
+function downloadICS(){
+  const live=SESS.filter(s=>pickOf(s.id)==='live' && s.startMin!=null && s.date)
+    .sort((a,b)=>a.dayOrder-b.dayOrder||a.startMin-b.startMin);
+  if(!live.length){ toast('No Live sessions to add yet'); return; }
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Sarah AANP CEU Planner//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:AANP 2026 Plan','X-WR-TIMEZONE:America/Los_Angeles'];
+  live.forEach(s=>{
+    const end = s.endMin!=null ? s.endMin : s.startMin+60;
+    L.push('BEGIN:VEVENT',`UID:aanp-${s.id}@sarah-planner`,
+      `DTSTART:${icsDT(s.date,s.startMin)}`,`DTEND:${icsDT(s.date,end)}`,
+      `SUMMARY:${icsEsc((s.code?s.code+' ':'')+s.title)}`);
+    if(roomOf(s)) L.push(`LOCATION:${icsEsc(roomOf(s)+', The Venetian Convention & Expo Center')}`);
+    L.push(`DESCRIPTION:${icsEsc(s.type+' · '+fmtCE(s.ce)+' CE'+(roomOf(s)?'':' · room TBA'))}`,'END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  const blob=new Blob([L.join('\r\n')],{type:'text/calendar'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='sarah-aanp-2026-plan.ics'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  toast(`Calendar file with ${live.length} sessions downloaded`);
+}
+
 /* ---- one-tap: load Sarah's captured AANP selections as Live ---- */
 function loadSarahPicks(){
   let n=0; SARAH_PICKS.forEach(code=>{ if(byId[code]){ state.picks[code]='live'; n++; } });
@@ -833,6 +857,7 @@ function renderPlan(){
    </div>
    <div class="tools no-print" style="margin-bottom:12px">
      <button id="printNow">🖨️ Print / Save as PDF</button>
+     <button id="icsBtn">📅 Add to Calendar</button>
      <button id="loadSarahPlan" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections</button>
    </div>
 
@@ -886,6 +911,7 @@ function renderPlan(){
 }
 function bindPlanTools(){
   const p=document.getElementById('printNow'); if(p)p.onclick=()=>window.print();
+  const ic=document.getElementById('icsBtn'); if(ic)ic.onclick=downloadICS;
   const ls=document.getElementById('loadSarahPlan'); if(ls)ls.onclick=loadSarahPicks;
 }
 
