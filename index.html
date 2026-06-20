@@ -176,7 +176,7 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
   <div class="app-title">
     <div>
       <h1>Sarah's AANP CEU Planner</h1>
-      <div class="sub">2026 National Conference · Las Vegas · Jun 23–27</div>
+      <div class="sub">2026 National Conference · Venetian Expo, Las Vegas · Jun 23–27</div>
     </div>
     <button class="hbtn" id="printBtn">🖨️ Plan</button>
   </div>
@@ -210,6 +210,13 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
 <script>
 "use strict";
 const TARGET = 75;
+const VENUE = {
+  name:"The Venetian Convention & Expo Center",
+  city:"Las Vegas, NV",
+  floorplan:"https://www.venetianlasvegas.com/meetings/planning/spaces/expo-halls/expo-map-floor-plan.html",
+  maps:"https://www.google.com/maps/search/?api=1&query=The%20Venetian%20Convention%20and%20Expo%20Center%20Las%20Vegas",
+  ondemand:"https://nc.aanp.org/ce"
+};
 const SESS = (window.SESSIONS||[]).slice();
 const byId = {}; SESS.forEach(s=>byId[s.id]=s);
 const DAYS = [...new Set(SESS.map(s=>s.day))]
@@ -234,7 +241,7 @@ function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recOverride:{}, prior:0, manual:[], _seedM_:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], _seedM_:false};
 let state = load();
 function load(){
   try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
@@ -246,6 +253,7 @@ function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 const fmtCE = n => (Math.round(n*100)/100).toString().replace(/\.0+$/,'');
 function isRecordable(s){ return (s.id in state.recOverride) ? state.recOverride[s.id] : s.recordable; }
 function roomOf(s){ return state.rooms[s.id] || ""; }
+function recUrlOf(id){ return state.recUrls[id] || ""; }
 function pickOf(id){ return state.picks[id] || ""; }
 
 function totals(){
@@ -408,6 +416,7 @@ function cardHTML(s,withControls){
     <div class="roomrow">
       <label>Room</label>
       <input type="text" placeholder="add room #" value="${escapeAttr(roomOf(s))}" data-room="${s.id}">
+      <a class="recflip" href="${VENUE.floorplan}" target="_blank" rel="noopener">📍 map</a>
       <button class="recflip" data-recflip="${s.id}">${rec?'mark live-only':'mark recordable'}</button>
     </div>`:''}
   </div>`;
@@ -472,6 +481,7 @@ function cardLiveHTML(s,isConf){
     <div class="roomrow">
       <label>Room</label>
       <input type="text" placeholder="add room #" value="${escapeAttr(roomOf(s))}" data-room="${s.id}">
+      <a class="recflip" href="${VENUE.floorplan}" target="_blank" rel="noopener">📍 map</a>
       <button class="recflip" data-drop="${s.id}">remove</button>
     </div>
   </div>`;
@@ -486,13 +496,25 @@ function renderRec(){
     .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
   if(!recs.length){ el.innerHTML=`<div class="empty"><b>No recordings queued</b>Mark sessions “Record” to watch them on-demand after the conference for extra CEUs.</div>`; return; }
   const tot=recs.reduce((a,s)=>a+s.ce,0);
-  let html=`<div class="note no-print" style="margin:2px 4px 12px"><b>${recs.length}</b> recordings queued · <b>${fmtCE(tot)} CE</b> to earn on-demand. No time conflicts here — watch at your own pace.</div>`;
+  const withLinks=recs.filter(s=>recUrlOf(s.id)).length;
+  let html=`<div class="note no-print" style="margin:2px 4px 12px"><b>${recs.length}</b> recordings queued · <b>${fmtCE(tot)} CE</b> to earn on-demand · ${withLinks} link${withLinks===1?'':'s'} saved. No time conflicts here — watch at your own pace.</div>
+    <div class="tools no-print" style="margin-bottom:12px">
+      <button id="recPortal" onclick="window.open('${VENUE.ondemand}','_blank')">▶ AANP on-demand portal</button>
+      <button id="recImport">⬆︎ Import recording links</button>
+    </div>
+    <input type="file" id="recLinkFile" accept=".json,.csv,text/csv,application/json" style="display:none">`;
   let curDay=null;
   for(const s of recs){
     if(s.day!==curDay){ curDay=s.day; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
+    const url=recUrlOf(s.id);
     html+=`<div class="scard is-rec" data-id="${s.id}">
       <h3>${escapeHtml(s.title)}</h3>
-      <div class="meta"><span><b>${s.start||''}</b></span><span>${s.type}</span><span class="tag ce">${fmtCE(s.ce)} CE</span></div>
+      <div class="meta"><span><b>${s.start||''}</b></span><span>${s.type}</span><span class="tag ce">${fmtCE(s.ce)} CE</span>${s.code?`<span style="color:var(--muted)">${s.code}</span>`:''}</div>
+      <div class="roomrow">
+        <label>Link</label>
+        <input type="url" inputmode="url" placeholder="paste recording link when available" value="${escapeAttr(url)}" data-recurl="${s.id}">
+        ${url?`<a class="recflip" href="${escapeAttr(url)}" target="_blank" rel="noopener">open ▶</a>`:''}
+      </div>
       <div class="statusrow">
         <button class="sbtn live" data-act="live"><span class="dot"></span>Move to Live</button>
         <button class="sbtn skip" data-act="skip"><span class="dot"></span>Remove</button>
@@ -503,7 +525,38 @@ function renderRec(){
   el.querySelectorAll('.scard').forEach(card=>{
     const id=card.dataset.id;
     card.querySelectorAll('.sbtn').forEach(b=>b.onclick=()=>setPick(id,b.dataset.act));
+    const ru=card.querySelector('[data-recurl]');
+    if(ru){ ru.addEventListener('input',e=>{ const v=e.target.value.trim(); if(v) state.recUrls[id]=v; else delete state.recUrls[id]; save(); });
+            ru.addEventListener('change',()=>renderRec()); }
   });
+  document.getElementById('recImport').onclick=()=>document.getElementById('recLinkFile').click();
+  document.getElementById('recLinkFile').onchange=importRecLinks;
+}
+
+/* Bulk import recording links: accepts JSON ({code:url} or [{code,url}]) or CSV (code,url per line) */
+function importRecLinks(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let pairs=[];
+    const txt=r.result.trim();
+    try{
+      const j=JSON.parse(txt);
+      if(Array.isArray(j)) pairs=j.map(o=>[o.code||o.id, o.url||o.link]);
+      else pairs=Object.entries(j);
+    }catch(_){
+      pairs=txt.split(/\r?\n/).map(line=>{ const i=line.indexOf(','); return i<0?null:[line.slice(0,i).trim(), line.slice(i+1).trim().replace(/^"|"$/g,'')]; }).filter(Boolean);
+    }
+    let n=0;
+    for(let [code,url] of pairs){
+      if(!code||!url) continue; code=String(code).trim();
+      const s=SESS.find(x=>x.id===code||x.code===code);
+      if(s){ state.recUrls[s.id]=String(url).trim(); n++; }
+    }
+    save(); renderRec();
+    toast(n?`Imported ${n} recording link${n===1?'':'s'}`:'No matching session codes found');
+  };
+  r.readAsText(f);
 }
 
 /* ====================================================================== */
@@ -615,7 +668,7 @@ function renderPlan(){
   let html=`
    <div class="printhead">
      <h1 style="margin:0 0 2px;font-size:20px">Sarah's AANP 2026 Conference Plan</h1>
-     <div style="color:#555;font-size:12px">AGACNP renewal · Target ${TARGET} CEUs · Las Vegas · Jun 23–27, 2026</div>
+     <div style="color:#555;font-size:12px">AGACNP renewal · Target ${TARGET} CEUs · ${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026</div>
    </div>
    <div class="tools no-print" style="margin-bottom:12px">
      <button id="printNow">🖨️ Print / Save as PDF</button>
@@ -653,9 +706,10 @@ function renderPlan(){
   if(recs.length){
     html+=`<div class="day-head" style="margin-top:14px">⏵ Watch by Recording · ${fmtCE(recs.reduce((a,s)=>a+s.ce,0))} CE</div>`;
     for(const s of recs){
+      const rurl=recUrlOf(s.id);
       html+=`<div class="scard is-rec" style="margin-bottom:6px">
         <h3 style="font-size:13.5px">${escapeHtml(s.title)}</h3>
-        <div class="meta" style="margin-bottom:0"><span>${s.day} ${s.date}</span><span>${s.type}</span><span class="tag ce">${fmtCE(s.ce)} CE</span></div>
+        <div class="meta" style="margin-bottom:0"><span>${s.day} ${s.date}</span><span>${s.type}</span><span class="tag ce">${fmtCE(s.ce)} CE</span>${rurl?`<span>▶ <a href="${escapeAttr(rurl)}">recording link</a></span>`:''}</div>
       </div>`;
     }
   }
@@ -697,12 +751,18 @@ function renderHelp(){
 
    <div class="panel">
      <h2>2 · Rooms &amp; your foot 🦶</h2>
-     <div class="hp">AANP hasn't published room numbers yet. As they're announced, type each into the <b>Room</b> box on the session. In <b>Live Schedule</b> the app shows your rooms in order and flags <span style="color:var(--warn);font-weight:600">tight transitions</span> (under 25 minutes between back-to-back sessions) so you can plan the walk and avoid rushing.</div>
+     <div class="hp">The conference is at <b>${VENUE.name}</b>, ${VENUE.city}. AANP assigns room numbers closer to the event (usually in the official app/program) — they aren't published yet. As they're announced, type each into the <b>Room</b> box on the session. Every room field has a <b>📍 map</b> link to the venue floor plan so you can see where it is.
+       <div class="legrow" style="margin-top:8px">🗺️ <a href="${VENUE.floorplan}" target="_blank" rel="noopener">Venetian Expo floor plan</a></div>
+       <div class="legrow">📍 <a href="${VENUE.maps}" target="_blank" rel="noopener">Open venue in Google Maps</a></div>
+       <div style="margin-top:8px">In <b>Live Schedule</b> the app shows your rooms in order and flags <span style="color:var(--warn);font-weight:600">tight transitions</span> (under 25 minutes between back-to-back sessions) so you can plan the walk and avoid rushing.</div>
+     </div>
    </div>
 
    <div class="panel">
      <h2>3 · Live vs. Recording</h2>
-     <div class="hp">You can only be in one room at a time, so the <b>Live Schedule</b> flags any two live picks that <span style="color:var(--warn);font-weight:600">overlap</span>. The fix: keep one live and switch the other to <b>Record</b>. Recordings never conflict — stack up as many as you like and work through them after the conference for additional CEUs.</div>
+     <div class="hp">You can only be in one room at a time, so the <b>Live Schedule</b> flags any two live picks that <span style="color:var(--warn);font-weight:600">overlap</span>. The fix: keep one live and switch the other to <b>Record</b>. Recordings never conflict — stack up as many as you like and work through them after the conference for additional CEUs.
+       <div style="margin-top:8px">On the <b>Recordings</b> tab, each session has a <b>Link</b> box: paste the on-demand URL when it's available and tap <b>open ▶</b> to watch. The recordings come with your in-person registration via the <a href="${VENUE.ondemand}" target="_blank" rel="noopener">AANP on-demand portal</a>. When AANP publishes the full list, you can <b>Import recording links</b> in bulk (a JSON or CSV of session-code → URL) instead of pasting one by one.</div>
+     </div>
    </div>
 
    <div class="panel">
