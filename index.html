@@ -201,12 +201,12 @@ main{max-width:760px;margin:0 auto;padding:12px 12px 80px}
   </div>
 </header>
 <nav class="tabs" id="tabs">
-  <button data-tab="help">ℹ️ Help</button>
-  <button data-tab="plan">My Plan</button>
   <button data-tab="browse" class="on">Browse</button>
-  <button data-tab="live">Live Schedule</button>
+  <button data-tab="plan">My Plan</button>
+  <button data-tab="live">Schedule</button>
   <button data-tab="rec">Watch Later</button>
-  <button data-tab="dash">CEU Dashboard</button>
+  <button data-tab="dash">CEUs</button>
+  <button data-tab="help">ℹ️ Help</button>
 </nav>
 
 <main>
@@ -827,6 +827,7 @@ function renderPlan(){
    </div>
    <div class="tools no-print" style="margin-bottom:12px">
      <button id="printNow">🖨️ Print / Save as PDF</button>
+     <button id="loadSarahPlan" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections</button>
    </div>
 
    <div class="bigprogress">
@@ -838,7 +839,7 @@ function renderPlan(){
 
   if(!live.length && !recs.length){
     html+=`<div class="empty"><b>Nothing planned yet</b>Mark some sessions Live or Record, then come back to print your plan.</div>`;
-    el.innerHTML=html; const p=document.getElementById('printNow'); if(p)p.onclick=()=>window.print(); return;
+    el.innerHTML=html; bindPlanTools(); return;
   }
 
   if(live.length){
@@ -875,7 +876,11 @@ function renderPlan(){
     }
   }
   el.innerHTML=html;
+  bindPlanTools();
+}
+function bindPlanTools(){
   const p=document.getElementById('printNow'); if(p)p.onclick=()=>window.print();
+  const ls=document.getElementById('loadSarahPlan'); if(ls)ls.onclick=loadSarahPicks;
 }
 
 /* ====================================================================== */
