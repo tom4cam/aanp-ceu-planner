@@ -7,7 +7,7 @@
 <title>Sarah's AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-20.2';
+window.APP_VERSION = '2026-06-20.3';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -244,7 +244,7 @@ main{padding:12px var(--gut) 80px}
 
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=2026-06-20.2"></script>
+<script src="data.js?v=2026-06-20.3"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -296,7 +296,7 @@ function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], _seedM_:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], _seedM_:false, _preloaded:false};
 let state = load();
 function load(){
   try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
@@ -1031,6 +1031,13 @@ function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&
 function escapeAttr(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ---------- boot ---------- */
+// First-run preload: if she has no picks yet and hasn't been preloaded before,
+// load Sarah's AANP selections automatically. Won't re-add after she clears them.
+if(!state._preloaded && Object.keys(state.picks).length===0){
+  state._preloaded=true;
+  SARAH_PICKS.forEach(c=>{ if(byId[c]) state.picks[c]='live'; });
+  save();
+}
 renderRibbon();
 show('browse');
 try{
