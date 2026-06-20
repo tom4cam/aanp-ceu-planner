@@ -48,6 +48,7 @@ CLINICAL = [
 ACUTE = r"acute care|critical care|\bicu\b|critically ill|sepsis|resuscitat|ventilat|hemodynam|trauma patient|hemorrhag|subarachnoid|aneurysm|\bshock\b|cellulitis in the acute|transitional care after critical|pleural|tracheostomy|preoperative|perioperative|limb ischemia|dissection|arterial catastroph|critical illness|chest x-?ray|sedation"
 TEACH = r"teach|precept|facult|academ|curricul|educat|\bstudent|\bdnp\b|\bosce\b|mentor|onboarding|preclinical|nurse educator|journalism|peer review|publish|\bauthor\b|fellowship|fellows"
 MEALS = r"breakfast|luncheon|\blunch\b|\bdinner\b|symposi|product theater|sponsored|supported sympos"
+AGER  = r"geriatr|geronto|older adult|\baging\b|age-friendly|\belder|\bfalls\b|deprescrib|polypharm|palliat|hospice|end[- ]of[- ]life|dementia|alzheimer|parkinson|frailty|adult-?gerontolog|\bagacnp\b|advanced care planning|decision making capacit|long-?term care"
 
 def mins(t):
     m = re.match(r'(\d+):(\d+)\s*(AM|PM)', t or '')
@@ -95,6 +96,7 @@ def build():
         low = (title + ' ' + typ).lower()
         tags = [topic]                                  # primary clinical topic first
         if re.search(ACUTE, low) and "Acute Care" not in tags: tags.append("Acute Care")
+        if re.search(AGER, low): tags.append("Adult Gerontology")
         if re.search(TEACH, low): tags.append("University Teaching")
         if fee: tags.append("Extra Cost")
         if ce == 0: tags.append("Optional (no CEUs)")
