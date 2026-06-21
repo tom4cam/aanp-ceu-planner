@@ -7,7 +7,7 @@
 <title>AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.12';
+window.APP_VERSION = '2026-06-21.13';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -16,7 +16,8 @@ window.APP_VERSION = '2026-06-21.12';
         if(!v) return; v=v.trim();
         if(v && v!==window.APP_VERSION && !sessionStorage.getItem('vbust')){
           sessionStorage.setItem('vbust','1');
-          location.replace(location.pathname+'?v='+encodeURIComponent(v));
+          var qs=location.search; var sep=qs?(qs+'&'):'?';
+          location.replace(location.pathname+sep+'v='+encodeURIComponent(v));
         } else { sessionStorage.removeItem('vbust'); }
       }).catch(function(){});
   }catch(e){}
@@ -316,8 +317,8 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.12"></script>
-<script src="details.js?v=2026-06-21.12"></script>
+<script src="data.js?v=2026-06-21.13"></script>
+<script src="details.js?v=2026-06-21.13"></script>
 <script>
 "use strict";
 const TARGET = 75;
