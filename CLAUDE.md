@@ -50,8 +50,10 @@ Goal: one tap copies the real slide-deck PDFs for chosen sessions into Sarah's D
   Manage deployments → edit → Version: New version. The `/exec` URL stays the same.
 
 ## Next steps / open threads
-- [ ] Redeploy `apps-script/copy-slides.gs` once (it now reads `?codes=`), then verify a checked
-      session's PDF lands in the Drive folder.
+- [x] Deployed `apps-script/copy-slides.gs` under Sarah's account; verified the `?codes=` path
+      copies exactly the passed sessions (17 decks copied; dedup confirmed). The `/exec` URL is
+      stored privately in the app (local storage) — intentionally NOT committed to this public repo.
+- [ ] On Sarah's device: paste the `/exec` URL once via My Notes → 📥 Copy slide PDFs to Drive.
 - [ ] After AANP assigns/updates rooms, re-capture and rebuild (`build_data.py` merges `rooms.json`).
 
 ## Reverse-engineering notes (rooms, picks, slides)
