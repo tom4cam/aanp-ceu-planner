@@ -7,7 +7,7 @@
 <title>Sarah's AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-20.3';
+window.APP_VERSION = '2026-06-20.4';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -96,6 +96,9 @@ main{padding:12px var(--gut) 80px}
 .scard.is-rec{border-left:4px solid var(--rec)}
 .scard.is-skip{opacity:.55}
 .scard h3{font-size:16px;margin:0 0 5px;font-weight:640;line-height:1.34}
+.snum{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;
+  background:var(--brand);color:#fff;border-radius:11px;font-size:12.5px;font-weight:700;
+  margin-right:7px;padding:0 5px;vertical-align:1px}
 .meta{display:flex;flex-wrap:wrap;gap:5px 9px;font-size:13px;color:var(--muted);margin-bottom:8px}
 .meta b{color:var(--ink);font-weight:600}
 .tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;
@@ -244,7 +247,7 @@ main{padding:12px var(--gut) 80px}
 
 <div class="toast" id="toast"></div>
 
-<script src="data.js?v=2026-06-20.3"></script>
+<script src="data.js?v=2026-06-20.4"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -509,16 +512,17 @@ function renderLive(){
   if(!live.length){ el.innerHTML=`<div class="empty"><b>No live sessions yet</b>Tap “Live” on a session in Browse to build your daily schedule.</div>`; return; }
   const conf=liveConflicts();
   let html=`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Walks between back-to-back rooms are scored from the real venue map — <b>far walks</b> (different floor or long distance) come with closer suggestions. 🦶</div>`;
-  let curDay=null, prev=null;
+  let curDay=null, prev=null, dayNum=0;
   for(const s of live){
     if(s.day!==curDay){
-      curDay=s.day; prev=null;
+      curDay=s.day; prev=null; dayNum=0;
       html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`;
       html+=dayMapHTML(live.filter(x=>x.day===curDay));
     }
+    dayNum++;
     if(prev && prev.endMin!=null && s.startMin!=null) html+=transitionHTML(prev,s);
     const isConf=conf.has(s.id);
-    html+=`<div class="slot ${isConf?'conflict':''}">`+cardLiveHTML(s,isConf)+`</div>`;
+    html+=`<div class="slot ${isConf?'conflict':''}">`+cardLiveHTML(s,isConf,dayNum)+`</div>`;
     prev=s;
   }
   el.innerHTML=html;
@@ -572,17 +576,25 @@ function dayMapHTML(daySessions){
     const bg=img?`<image href="${img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>`:'';
     let line='';
     for(let i=0;i<lp.length-1;i++){const a=lp[i].g,b=lp[i+1].g;
+      if(a.x===b.x&&a.y===b.y) continue;
       line+=`<line x1="${(a.x*100).toFixed(1)}" y1="${(a.y*100).toFixed(1)}" x2="${(b.x*100).toFixed(1)}" y2="${(b.y*100).toFixed(1)}" stroke="#ff7a1a" stroke-width="1.3" stroke-dasharray="3 2"/>`;}
-    const dots=lp.map(p=>{const cx=(p.g.x*100).toFixed(1),cy=(p.g.y*100).toFixed(1);
-      return `<circle cx="${cx}" cy="${cy}" r="4.4" fill="var(--brand)" stroke="#fff" stroke-width="1.1"/><text x="${cx}" y="${(p.g.y*100+1.6).toFixed(1)}" font-size="4.6" fill="#fff" text-anchor="middle" font-weight="700">${p.n}</text>`;}).join('');
+    // merge pins that share a room/coordinate so every number stays visible (e.g. "1,2")
+    const locs=[]; const idx={};
+    lp.forEach(p=>{const k=p.g.x+','+p.g.y; if(idx[k]==null){idx[k]=locs.length; locs.push({g:p.g,room:p.room,ns:[]});} locs[idx[k]].ns.push(p.n);});
+    const dots=locs.map(L=>{const cx=L.g.x*100, cy=L.g.y*100, label=L.ns.join(',');
+      const r=4.6, w=Math.max(r*2, 4+label.length*3.0);
+      const shape = L.ns.length>1
+        ? `<rect x="${(cx-w/2).toFixed(1)}" y="${(cy-r).toFixed(1)}" width="${w.toFixed(1)}" height="${(r*2).toFixed(1)}" rx="${r.toFixed(1)}" fill="var(--brand)" stroke="#fff" stroke-width="1.1"/>`
+        : `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r}" fill="var(--brand)" stroke="#fff" stroke-width="1.1"/>`;
+      return shape+`<text x="${cx.toFixed(1)}" y="${(cy+1.6).toFixed(1)}" font-size="4.6" fill="#fff" text-anchor="middle" font-weight="700">${label}</text>`;}).join('');
     return `<div class="lvlmap"><div class="lvlmap-h">Level ${lv}</div><svg viewBox="0 0 100 100" width="100%">${bg}${line}${dots}</svg>`+
       `<div class="lvlmap-key">${lp.map(p=>`${p.n}. ${escapeHtml(p.room.replace(/^Level \d+,\s*/,''))}`).join(' · ')}</div></div>`;
   }).join('');
   return `<div class="daymap no-print">${boxes}<div class="daymap-note">Numbered pins = your sessions, in order, on the real venue floor plan. Orange line = the walk on that floor; pins on different floors mean an elevator trip — plan extra time. 🦶</div></div>`;
 }
-function cardLiveHTML(s,isConf){
+function cardLiveHTML(s,isConf,num){
   return `<div class="scard is-live" data-id="${s.id}">
-    <h3>${escapeHtml(s.title)}</h3>
+    <h3>${num?`<span class="snum">${num}</span>`:''}${escapeHtml(s.title)}</h3>
     <div class="meta">
       <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
       ${roomOf(s)?`<span class="tag room">📍 ${escapeHtml(roomOf(s))}</span>`:''}
@@ -893,12 +905,13 @@ function renderPlan(){
 
   if(live.length){
     html+=`<div class="day-head" style="margin-top:6px">▶ Attending Live · ${fmtCE(live.reduce((a,s)=>a+s.ce,0))} CE</div>`;
-    let curDay=null;
+    let curDay=null, dayNum=0;
     for(const s of live){
-      if(s.day!==curDay){ curDay=s.day; html+=`<div style="font-weight:700;font-size:12.5px;margin:9px 4px 5px;color:var(--brand-dk)">${s.day} ${s.date}</div>`; }
+      if(s.day!==curDay){ curDay=s.day; dayNum=0; html+=`<div style="font-weight:700;font-size:12.5px;margin:9px 4px 5px;color:var(--brand-dk)">${s.day} ${s.date}</div>`; }
+      dayNum++;
       const r=roomOf(s);
       html+=`<div class="scard is-live" style="margin-bottom:6px">
-        <h3 style="font-size:13.5px">${escapeHtml(s.title)}</h3>
+        <h3 style="font-size:13.5px"><span class="snum">${dayNum}</span>${escapeHtml(s.title)}</h3>
         <div class="meta" style="margin-bottom:0">
           <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
           ${r?`<span><b>Room ${escapeHtml(r)}</b></span>`:`<span style="color:#b00">Room: ____</span>`}
