@@ -7,7 +7,7 @@
 <title>AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.11';
+window.APP_VERSION = '2026-06-21.12';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -316,8 +316,8 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.11"></script>
-<script src="details.js?v=2026-06-21.11"></script>
+<script src="data.js?v=2026-06-21.12"></script>
+<script src="details.js?v=2026-06-21.12"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -328,7 +328,8 @@ const VENUE = {
   maps:"https://www.google.com/maps/search/?api=1&query=The%20Venetian%20Convention%20and%20Expo%20Center%20Las%20Vegas",
   ondemand:"https://nc.aanp.org/ce"
 };
-const DRIVE_FOLDER = "https://drive.google.com/drive/folders/1bMjkD1PA54EXigKFE1SnQnHgexqGGXuv";
+/* Drive folder lives only in this device's local storage (state.driveFolder).
+   Seed it privately by opening the site once with ?drive=<folder link or id>. */
 // Real room coordinates (level + normalized x/y on that level's floor plan), from the AANP app bundle.
 const ROOMGEO = {"Level 4, Zeno 4601":{"lvl":4,"x":0.3104,"y":0.7532},"Level 5, Palazzo A-F":{"lvl":5,"x":0.6065,"y":0.3156},"Level 5, Palazzo B":{"lvl":5,"x":0.5974,"y":0.174},"Level 4, Zeno 4701":{"lvl":4,"x":0.4805,"y":0.7558},"Level 4, Lando 4201":{"lvl":4,"x":0.3247,"y":0.3338},"Level 4, Lando 4304":{"lvl":4,"x":0.5506,"y":0.4234},"Level 4, Marcello 4501":{"lvl":4,"x":0.3143,"y":0.6403},"Level 4, Marcello 4503":{"lvl":4,"x":0.474,"y":0.626},"Level 4, Marcello 4505":{"lvl":4,"x":0.6208,"y":0.6273},"Level 3, Lido 3103":{"lvl":3,"x":0.4706,"y":0.2558},"Level 3, Lido 3105":{"lvl":3,"x":0.6049,"y":0.2609},"Level 3, Murano 3201 B":{"lvl":3,"x":0.3389,"y":0.3939},"Level 3, Murano 3301 A":{"lvl":3,"x":0.3402,"y":0.4412},"Level 3, Murano 3303":{"lvl":3,"x":0.4744,"y":0.4642},"Level 3, Murano 3305":{"lvl":3,"x":0.6023,"y":0.454},"Level 3, San Polo 3503":{"lvl":3,"x":0.4744,"y":0.6624},"Level 3, Toscana 3601":{"lvl":3,"x":0.3223,"y":0.7532},"Level 3, Toscana 3701":{"lvl":3,"x":0.4834,"y":0.7609},"Level 4,  Zeno 4701":{"lvl":4,"x":0.4783,"y":0.7417},"Level 4, Delfino 4001":{"lvl":4,"x":0.3223,"y":0.1228},"Level 4, Delfino 4104":{"lvl":4,"x":0.5486,"y":0.2174},"Level 2, Expo Upper Lobby":{"lvl":2,"x":0.8159,"y":0.6317},"Level 2, Hall A":{"lvl":2,"x":0.4373,"y":0.8529},"Level 2, Hall C":{"lvl":2,"x":0.4207,"y":0.3926},"Level 3, Lido 3001 B":{"lvl":3,"x":0.3363,"y":0.202},"Level 3, Lido 3002":{"lvl":3,"x":0.4079,"y":0.1726},"Level 3, Lido 3101 A":{"lvl":3,"x":0.335,"y":0.234}};
 const PRELOAD_PICKS = ["26.1.058","26.1.068","26.2.006","26.2.031","26.2.046","26.2.070","26.2.112","26.2.127","26.3.014","26.3.040","26.3.070","26.3.097","26.3.120","26.4.013","26.4.028","26.4.045","26.4.098","26.4.119","26.5.116","26.1.078","26.3.083","26.5.115","26.2.005"];
@@ -1109,7 +1110,7 @@ function noteData(s){
 }
 function renderNotes(){
   const el=document.getElementById('view-notes');
-  const list=notesSessions(); const drive=state.driveFolder||DRIVE_FOLDER;
+  const list=notesSessions();
   let html=`
    <div class="panel no-print">
      <h2>📝 My Notes</h2>
@@ -1136,7 +1137,9 @@ function renderNotes(){
   el.innerHTML=html; bindNotes();
 }
 function bindNotes(){
-  const dopen=document.getElementById('driveOpen'); if(dopen) dopen.onclick=()=>{ window.open(state.driveFolder||DRIVE_FOLDER,'_blank'); };
+  const dopen=document.getElementById('driveOpen'); if(dopen) dopen.onclick=()=>{
+    let u=state.driveFolder; if(!u){ u=prompt('Paste your Google Drive folder link:',''); if(!u) return; u=u.trim(); state.driveFolder=u; save(); }
+    window.open(u,'_blank'); };
   const cp=document.getElementById('notesCopy'); if(cp) cp.onclick=copyNotes;
   const cs=document.getElementById('copySlides'); if(cs) cs.onclick=copySlidesToDrive;
 }
@@ -1287,11 +1290,13 @@ if(!state._preloaded && Object.keys(state.picks).length===0){
 renderRibbon();
 show('browse');
 try{
-  if(new URLSearchParams(location.search).get('plan')){
-    loadPreset();
-    history.replaceState(null,'',location.pathname);
-    show('live');
-  }
+  const q=new URLSearchParams(location.search);
+  // private one-time seed of the Drive folder (kept only in this device's local storage)
+  let dv=q.get('drive');
+  if(dv){ dv=dv.trim(); if(/^[A-Za-z0-9_-]{20,}$/.test(dv)) dv='https://drive.google.com/drive/folders/'+dv;
+    state.driveFolder=dv; save(); }
+  if(q.get('plan')){ loadPreset(); show('live'); }
+  if(dv || q.get('plan')) history.replaceState(null,'',location.pathname);
 }catch(e){}
 </script>
 </body>
