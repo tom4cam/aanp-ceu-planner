@@ -7,7 +7,7 @@
 <title>Sarah's AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.4';
+window.APP_VERSION = '2026-06-21.5';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -190,6 +190,10 @@ main{padding:12px var(--gut) 80px}
 .sd-field textarea{min-height:54px;resize:vertical}
 .sd-openlink{display:inline-block;margin-top:2px;background:var(--rec-soft);color:var(--rec);border-radius:9px;padding:9px 12px;font-size:14px;font-weight:700;text-decoration:none}
 .sd-saved{font-size:12px;color:var(--live);font-weight:600;margin-left:6px}
+.nt-row{font-size:13.5px;color:var(--ink);margin-top:4px}
+.nt-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:7px}
+.nt-links a{font-size:13px;font-weight:700;color:var(--rec);background:var(--rec-soft);border-radius:8px;padding:6px 10px;text-decoration:none}
+.nt-notes{font-size:13.5px;color:var(--ink);background:#f7fafd;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;white-space:pre-wrap;line-height:1.5}
 .lvlmap-key{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
 .daymap-note{flex-basis:100%;font-size:12.5px;color:var(--muted);line-height:1.5}
 
@@ -279,8 +283,9 @@ main{padding:12px var(--gut) 80px}
   <button data-tab="browse" class="on">Browse</button>
   <button data-tab="plan">My Plan</button>
   <button data-tab="live">My Map</button>
-  <button data-tab="rec">Later</button>
+  <button data-tab="notes">My Notes</button>
   <button data-tab="dash">CEUs</button>
+  <button data-tab="rec">Watch Later</button>
   <button data-tab="help">ℹ️ Help</button>
 </nav>
 </div>
@@ -292,6 +297,7 @@ main{padding:12px var(--gut) 80px}
   <section class="view" id="view-rec"></section>
   <section class="view" id="view-dash"></section>
   <section class="view print-on" id="view-plan"></section>
+  <section class="view" id="view-notes"></section>
   <section class="view" id="view-help"></section>
 </main>
 
@@ -299,8 +305,8 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.4"></script>
-<script src="details.js?v=2026-06-21.4"></script>
+<script src="data.js?v=2026-06-21.5"></script>
+<script src="details.js?v=2026-06-21.5"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -352,7 +358,7 @@ function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, _seedM_:false, _preloaded:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, driveFolder:'', _seedM_:false, _preloaded:false};
 let state = load();
 function load(){
   try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
@@ -456,7 +462,7 @@ function renderBrowse(){
        <select id="fStatus">
          <option value="">Any status</option>
          <option value="live" ${bf.status==='live'?'selected':''}>🟢 Attend live</option>
-         <option value="rec" ${bf.status==='rec'?'selected':''}>🔵 Later</option>
+         <option value="rec" ${bf.status==='rec'?'selected':''}>🔵 Watch later</option>
          <option value="none" ${bf.status==='none'?'selected':''}>Undecided</option>
          <option value="skip" ${bf.status==='skip'?'selected':''}>Skipped</option>
        </select>
@@ -536,7 +542,7 @@ function cardHTML(s,withControls){
     ${withControls?`
     <div class="statusrow">
       <button class="sbtn live ${p==='live'?'on':''}" data-act="live"><span class="dot"></span>Live</button>
-      <button class="sbtn rec ${p==='rec'?'on':''}" data-act="rec"><span class="dot"></span>Later</button>
+      <button class="sbtn rec ${p==='rec'?'on':''}" data-act="rec"><span class="dot"></span>Watch Later</button>
       <button class="sbtn skip ${p==='skip'?'on':''}" data-act="skip"><span class="dot"></span>Skip</button>
     </div>
     <div class="roomrow">
@@ -585,7 +591,7 @@ function renderLive(){
   el.querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>{ setPick(b.dataset.drop,'live'); });
   el.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{
     setPick(b.dataset.from,'rec'); state.picks[b.dataset.swap]='live'; save(); renderRibbon(); renderActive();
-    toast('Swapped to the closer session (old one → Later)');
+    toast('Swapped to the closer session (old one → Watch Later)');
   });
   el.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
 }
@@ -641,15 +647,17 @@ function openSessionModal(id){
     ${d.desc?`<div class="sd-h">Description</div><div class="sd-desc">${escapeHtml(d.desc)}</div>`:'<div class="sd-cered">No description available.</div>'}
     <div class="sd-h">Presenter &amp; slides <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· saved automatically</span></div>
     <div class="sd-field"><label>Presenter(s)</label><input data-sf="presenter" value="${escapeAttr(presenterVal)}" placeholder="Presenter name(s)"></div>
-    <div class="sd-field"><label>Slides / handout link or notes</label><input data-sf="slides" value="${escapeAttr(slidesVal)}" placeholder="Paste a link or notes"></div>
+    <div class="sd-field"><label>Slides / handout / Google Drive link</label><input data-sf="slides" inputmode="url" value="${escapeAttr(slidesVal)}" placeholder="Paste a link (handout, Drive file, …)"></div>
     ${openUrl?`<a class="sd-openlink" href="${escapeAttr(openUrl)}" target="_blank" rel="noopener">📄 Open handouts / slides</a>`:''}
+    <div class="sd-field" style="margin-top:12px"><label>My notes</label><textarea data-sf="notes" placeholder="Type your notes for this session…">${escapeHtml(saved.notes||'')}</textarea></div>
   `;
   modal.classList.add('show'); document.body.style.overflow='hidden';
   card.querySelectorAll('[data-sf]').forEach(inp=>inp.addEventListener('input',()=>{
     const cur=state.detail[id]||(state.detail[id]={}); cur[inp.dataset.sf]=inp.value; save();
   }));
 }
-function closeSessModal(){ const m=document.getElementById('sessModal'); m.classList.remove('show'); document.body.style.overflow=''; }
+function closeSessModal(){ const m=document.getElementById('sessModal'); m.classList.remove('show'); document.body.style.overflow='';
+  if(activeTab==='notes') renderNotes(); }
 /* walk score between two live sessions + closer-room suggestions */
 function transitionHTML(prev,s){
   const gap=s.startMin-prev.endMin;
@@ -663,7 +671,7 @@ function transitionHTML(prev,s){
     out=`<div class="transition far">🦶 <b>Far walk</b> — ${why}${(gap>=0&&gap<999)?`, only ${gap} min between`:''}.<div class="trrooms">${rtxt}</div></div>`;
     const alts=closerAlternatives(r1,s,3);
     if(alts.length){
-      out+=`<div class="suggest"><div class="sg-h">Closer options at ${s.start} (tap to switch; current → Later):</div>`+
+      out+=`<div class="suggest"><div class="sg-h">Closer options at ${s.start} (tap to switch; current → Watch Later):</div>`+
         alts.map(a=>`<button class="sg" data-swap="${a.o.id}" data-from="${s.id}"><b>${escapeHtml(roomOf(a.o))}</b> · ${escapeHtml(truncate(a.o.title,34))} · ${fmtCE(a.o.ce)} CE</button>`).join('')+
         `</div>`;
     }
@@ -732,10 +740,10 @@ function renderRec(){
   const el=document.getElementById('view-rec');
   const recs = SESS.filter(s=>pickOf(s.id)==='rec')
     .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
-  if(!recs.length){ el.innerHTML=`<div class="empty"><b>Nothing saved to Later</b>Tap “Later” on a session to catch it on-demand after the conference for extra CEUs.</div>`; return; }
+  if(!recs.length){ el.innerHTML=`<div class="empty"><b>Nothing saved to Watch Later</b>Tap “Watch Later” on a session to catch it on-demand after the conference for extra CEUs.</div>`; return; }
   const tot=recs.reduce((a,s)=>a+s.ce,0);
   const withLinks=recs.filter(s=>recUrlOf(s.id)).length;
-  let html=`<div class="note no-print" style="margin:2px 4px 12px"><b>${recs.length}</b> saved to Later · <b>${fmtCE(tot)} CE</b> to earn on-demand · ${withLinks} link${withLinks===1?'':'s'} saved. No time conflicts here — watch at your own pace.</div>
+  let html=`<div class="note no-print" style="margin:2px 4px 12px"><b>${recs.length}</b> saved to Watch Later · <b>${fmtCE(tot)} CE</b> to earn on-demand · ${withLinks} link${withLinks===1?'':'s'} saved. No time conflicts here — watch at your own pace.</div>
     <div class="tools no-print" style="margin-bottom:12px">
       <button id="recPortal" onclick="window.open('${VENUE.ondemand}','_blank')">▶ AANP on-demand portal</button>
       <button id="recImport">⬆︎ Import recording links</button>
@@ -1064,6 +1072,84 @@ function bindPlanTools(){
 /* ====================================================================== */
 /*  HELP / INSTRUCTIONS                                                     */
 /* ====================================================================== */
+/* ====================================================================== */
+/*  MY NOTES — consolidated notes, presenters, slide/handout links         */
+/* ====================================================================== */
+function notesSessions(){
+  const ids=new Set();
+  SESS.forEach(s=>{ const p=pickOf(s.id); if(p==='live'||p==='rec') ids.add(s.id); });
+  Object.keys(state.detail||{}).forEach(id=>{ const d=state.detail[id]; if(d&&(d.notes||d.slides||d.presenter)) ids.add(id); });
+  Object.keys(state.recUrls||{}).forEach(id=>{ if(state.recUrls[id]) ids.add(id); });
+  return [...ids].map(id=>byId[id]).filter(Boolean).sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
+}
+function noteData(s){
+  const d=(window.DETAILS&&window.DETAILS[s.id])||{}; const sv=state.detail[s.id]||{};
+  return { presenter: sv.presenter!=null?sv.presenter:(d.presenters||[]).join('; '),
+           handout: d.handout||'', slides: sv.slides!=null?sv.slides:(d.handout||''),
+           notes: sv.notes||'', rec: recUrlOf(s.id) };
+}
+function renderNotes(){
+  const el=document.getElementById('view-notes');
+  const list=notesSessions(); const drive=state.driveFolder||'';
+  let html=`
+   <div class="panel no-print">
+     <h2>📝 My Notes</h2>
+     <div class="note">Everything you've saved — presenters, slide/handout links, recordings and notes — in one place. Tap a session to edit. Export it to keep in Google Drive or a doc.</div>
+     <div class="field" style="margin-top:10px"><label style="flex:0 0 auto">Google Drive folder</label>
+       <input id="driveInp" type="url" inputmode="url" style="flex:1;width:auto;text-align:left" placeholder="Paste your Drive folder link" value="${escapeAttr(drive)}"></div>
+     <div class="tools">
+       ${drive?`<button id="driveOpen">📂 Open Drive folder</button>`:''}
+       <button id="notesMd">⬇︎ Export notes (Markdown)</button>
+       <button id="notesCopy">📋 Copy all</button>
+     </div>
+     <div class="note">Tip: paste a Drive link in each session's <b>Slides / Drive link</b> field, then export here and drop the file in your Drive folder.</div>
+   </div>`;
+  if(!list.length){ html+=`<div class="empty"><b>No notes yet</b>Open a session's <b>ⓘ more info</b> and add a note or slide link — it shows up here.</div>`; el.innerHTML=html; bindNotes(); return; }
+  let curDay=null;
+  for(const s of list){
+    if(s.day!==curDay){ curDay=s.day; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
+    const n=noteData(s); const handoutUrl=/^https?:/.test(n.slides)?n.slides:n.handout;
+    html+=`<div class="scard" data-more="${s.id}" style="cursor:pointer">
+      <h3>${escapeHtml(s.title)}</h3>
+      <div class="meta"><span><b>${s.start||''}</b></span>${roomOf(s)?`<span class="tag room">📍 ${escapeHtml(roomOf(s))}</span>`:''}<span class="tag ce">${fmtCE(s.ce)} CE</span></div>
+      ${n.presenter?`<div class="nt-row"><b>Presenter:</b> ${escapeHtml(n.presenter)}</div>`:''}
+      ${(handoutUrl||n.rec)?`<div class="nt-links">${handoutUrl?`<a href="${escapeAttr(handoutUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 Handout / Slides</a>`:''}${n.rec?`<a href="${escapeAttr(n.rec)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">▶ Recording</a>`:''}</div>`:''}
+      ${n.notes?`<div class="nt-notes">${escapeHtml(n.notes)}</div>`:''}
+    </div>`;
+  }
+  el.innerHTML=html; bindNotes();
+}
+function bindNotes(){
+  const di=document.getElementById('driveInp'); if(di) di.addEventListener('input',()=>{ state.driveFolder=di.value.trim(); save(); });
+  const dopen=document.getElementById('driveOpen'); if(dopen) dopen.onclick=()=>{ if(state.driveFolder) window.open(state.driveFolder,'_blank'); };
+  const md=document.getElementById('notesMd'); if(md) md.onclick=exportNotesMd;
+  const cp=document.getElementById('notesCopy'); if(cp) cp.onclick=copyNotes;
+}
+function notesMarkdown(){
+  const t=totals(); let out=`# Sarah's AANP 2026 — Notes & Links\n\n_${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026 · ${fmtCE(t.total)}/${TARGET} CEUs_\n`;
+  const list=notesSessions(); let day=null;
+  for(const s of list){ if(s.day!==day){ day=s.day; out+=`\n## ${s.day} ${s.date}\n`; }
+    const n=noteData(s);
+    out+=`\n### ${(s.code?s.code+' ':'')}${s.title}\n`;
+    out+=`- ${s.start||''}${s.end?'–'+s.end:''}${roomOf(s)?` · ${roomOf(s)}`:''} · ${fmtCE(s.ce)} CE${pickOf(s.id)==='live'?' · Live':pickOf(s.id)==='rec'?' · Watch Later':''}\n`;
+    if(n.presenter) out+=`- Presenter: ${n.presenter}\n`;
+    if(n.handout) out+=`- Handout: ${n.handout}\n`;
+    if(n.slides && n.slides!==n.handout) out+=`- Slides/Drive: ${n.slides}\n`;
+    if(n.rec) out+=`- Recording: ${n.rec}\n`;
+    if(n.notes) out+=`- Notes: ${n.notes.replace(/\r?\n/g,' ')}\n`;
+  }
+  return out;
+}
+function exportNotesMd(){
+  const blob=new Blob([notesMarkdown()],{type:'text/markdown'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sarah-aanp-notes.md'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  toast('Notes exported (Markdown)');
+}
+function fallbackCopy(txt){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');toast('Copied all notes');}catch(e){toast('Copy failed');} ta.remove(); }
+function copyNotes(){ const txt=notesMarkdown();
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(()=>toast('Copied all notes')).catch(()=>fallbackCopy(txt));
+  else fallbackCopy(txt); }
+
 function renderHelp(){
   const el=document.getElementById('view-help');
   el.innerHTML=`
@@ -1137,6 +1223,7 @@ function renderActive(){
   else if(activeTab==='rec') renderRec();
   else if(activeTab==='dash') renderDash();
   else if(activeTab==='plan') renderPlan();
+  else if(activeTab==='notes') renderNotes();
   else if(activeTab==='help') renderHelp();
 }
 function show(tab){
