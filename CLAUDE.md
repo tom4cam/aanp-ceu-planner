@@ -39,7 +39,11 @@ Goal: one tap copies the real slide-deck PDFs for chosen sessions into Sarah's D
   `doGet(e)` reads `e.parameter.codes` and runs `copySlides(codes)`, which fetches
   `https://files.aanpdownload.org/2026/Natl/doc/{code}.pdf` per session, skips the ~57794-byte
   AANP placeholder and anything already in the folder (dedup), and copies the rest.
-  Folder id is hardcoded (`FOLDER_ID`); deploy as Web app, Execute as Me, Anyone with link.
+  Folder id is hardcoded (`FOLDER_ID` = "2026 AANP Slides and Notes", **owned by
+  sarahspendlovenp@gmail.com**). The Apps Script therefore lives under Sarah's Google account
+  (it must run as an account that can write that folder); deploy as Web app, Execute as Me
+  (Sarah), Anyone with link. The deployed `/exec` URL is pasted once into the app
+  (`state.driveScriptUrl`) on Sarah's device.
 - The app now passes the checked session codes (`?codes=26.1.058,...`) so the script copies exactly
   what's checked. Opened directly with no codes, it falls back to every session in `SESSIONS`.
 - **Redeploy needed when the .gs changes:** paste the file into script.google.com, Deploy →
