@@ -7,7 +7,7 @@
 <title>AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.10';
+window.APP_VERSION = '2026-06-21.11';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -316,8 +316,8 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.10"></script>
-<script src="details.js?v=2026-06-21.10"></script>
+<script src="data.js?v=2026-06-21.11"></script>
+<script src="details.js?v=2026-06-21.11"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -370,7 +370,7 @@ function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, driveFolder:'', _seedM_:false, _preloaded:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, driveFolder:'', driveScriptUrl:'', _seedM_:false, _preloaded:false};
 let state = load();
 function load(){
   try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
@@ -1117,6 +1117,7 @@ function renderNotes(){
      <div class="tools" style="margin-top:10px">
        <button id="notesCopy">📋 Copy All Notes</button>
        <button id="driveOpen">📂 Open Google Drive folder</button>
+       <button id="copySlides">📥 Copy slide PDFs to Drive</button>
      </div>
    </div>`;
   if(!list.length){ html+=`<div class="empty"><b>No notes yet</b>Open any session's <b>ⓘ more info</b>, then check <b>⭐ Save slides to My Notes</b> or type a note — it shows up here.</div>`; el.innerHTML=html; bindNotes(); return; }
@@ -1137,6 +1138,12 @@ function renderNotes(){
 function bindNotes(){
   const dopen=document.getElementById('driveOpen'); if(dopen) dopen.onclick=()=>{ window.open(state.driveFolder||DRIVE_FOLDER,'_blank'); };
   const cp=document.getElementById('notesCopy'); if(cp) cp.onclick=copyNotes;
+  const cs=document.getElementById('copySlides'); if(cs) cs.onclick=copySlidesToDrive;
+}
+function copySlidesToDrive(){
+  let u=state.driveScriptUrl;
+  if(!u){ u=prompt('One-time: paste your "Copy slides" Apps Script web-app URL (ends in /exec). See setup in the notes Tom shared.',''); if(!u) return; u=u.trim(); if(!/^https?:\/\//.test(u)){ toast('That doesn\'t look like a URL'); return; } state.driveScriptUrl=u; save(); }
+  window.open(u,'_blank'); toast('Copying slides to Drive…');
 }
 function notesText(){
   const t=totals(); let out=`AANP 2026 — Notes\n${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026 · ${fmtCE(t.total)}/${TARGET} CEUs\n`;
