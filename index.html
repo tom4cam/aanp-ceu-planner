@@ -7,7 +7,7 @@
 <title>Sarah's AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.1';
+window.APP_VERSION = '2026-06-21.2';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -39,8 +39,17 @@ button{font-family:inherit;cursor:pointer}
 a{color:var(--brand)}
 
 /* ---- Header ---- */
+.topbar{position:sticky;top:0;z-index:30;background:var(--brand);box-shadow:0 2px 6px rgba(13,71,161,.18)}
 header.app{background:var(--brand);color:#fff;padding:10px 0 0}
-.stickybar{position:sticky;top:0;z-index:30;background:var(--brand);box-shadow:0 2px 6px rgba(13,71,161,.18)}
+.stickybar{background:var(--brand)}
+.app-title h1{transition:font-size .18s ease}
+.app-title{transition:padding .18s ease}
+.app-title .sub{transition:opacity .15s ease,max-height .18s ease,margin .18s ease;overflow:hidden;max-height:28px}
+/* condensed (on scroll): title-only, thinner */
+.topbar.cond header.app{padding-top:5px}
+.topbar.cond .app-title{padding-top:1px;padding-bottom:7px}
+.topbar.cond .app-title h1{font-size:15px}
+.topbar.cond .app-title .sub{opacity:0;max-height:0;margin:0}
 .app-title{display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:4px var(--gut) 10px}
 .app-title h1{font-size:18.5px;margin:0;font-weight:650;letter-spacing:.2px}
@@ -56,7 +65,7 @@ header.app{background:var(--brand);color:#fff;padding:10px 0 0}
 .ceu-ribbon .big small{font-size:12px;font-weight:500;opacity:.8}
 .ribbon-bar{flex:1;height:9px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden}
 .ribbon-bar > i{display:block;height:100%;background:linear-gradient(90deg,#8fc2f2,#e7f2ff);border-radius:6px;transition:width .3s}
-.ribbon-meta{font-size:11.5px;opacity:.9;text-align:right;min-width:84px}
+.ribbon-meta{font-size:12px;opacity:.9;text-align:right;min-width:84px}
 
 /* ---- Tabs ---- */
 nav.tabs{display:flex;background:var(--brand);overflow-x:auto;scrollbar-width:none;padding:0 var(--gut)}
@@ -84,7 +93,7 @@ main{padding:12px var(--gut) 80px}
   font-size:13px;color:var(--muted);font-weight:600}
 .chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk)}
 .filter-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.filter-row select{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff;color:var(--ink)}
+.filter-row select{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px;background:#fff;color:var(--ink)}
 .count-line{font-size:13px;color:var(--muted);margin:2px 2px 10px}
 
 /* ---- Session card ---- */
@@ -100,13 +109,13 @@ main{padding:12px var(--gut) 80px}
 .scard.is-live{border-left:4px solid var(--live)}
 .scard.is-rec{border-left:4px solid var(--rec)}
 .scard.is-skip{opacity:.55}
-.scard h3{font-size:16px;margin:0 0 5px;font-weight:640;line-height:1.34}
+.scard h3{font-size:17px;margin:0 0 5px;font-weight:640;line-height:1.36}
 .snum{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;
   background:var(--brand);color:#fff;border-radius:11px;font-size:12.5px;font-weight:700;
   margin-right:7px;padding:0 5px;vertical-align:1px}
-.meta{display:flex;flex-wrap:wrap;gap:5px 9px;font-size:13px;color:var(--muted);margin-bottom:8px}
+.meta{display:flex;flex-wrap:wrap;gap:5px 9px;font-size:14px;color:var(--muted);margin-bottom:8px}
 .meta b{color:var(--ink);font-weight:600}
-.tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;
+.tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:5px;padding:2px 6px;
   text-transform:uppercase;letter-spacing:.3px}
 .tag.ce{background:var(--brand-soft);color:var(--brand-dk)}
 .tag.fee{background:#fff4e0;color:#9a6700}
@@ -140,7 +149,7 @@ main{padding:12px var(--gut) 80px}
 .transition .trrooms{font-weight:500;color:#7a3d2a;margin-top:2px}
 .tag.room{background:var(--brand-soft);color:var(--brand-dk);text-transform:none;letter-spacing:0;font-weight:700}
 .suggest{margin:-4px 4px 10px;display:flex;flex-direction:column;gap:5px}
-.sg-h{font-size:11.5px;color:var(--muted);font-weight:600}
+.sg-h{font-size:12.5px;color:var(--muted);font-weight:600}
 .sg{text-align:left;border:1px solid var(--rec);background:var(--rec-soft);color:var(--brand-dk);
   border-radius:9px;padding:8px 10px;font-size:12.5px;font-weight:600;line-height:1.35}
 .sg:active{filter:brightness(.95)}
@@ -148,9 +157,21 @@ main{padding:12px var(--gut) 80px}
   border-radius:12px;padding:11px;margin:0 0 12px;box-shadow:var(--shadow)}
 .lvlmap{flex:1 1 240px;min-width:200px;max-width:340px}
 .lvlmap-h{font-size:12.5px;font-weight:700;color:var(--brand-dk);margin-bottom:3px;text-align:center}
-.lvlmap svg{background:#eef3f9;border:1px solid var(--line);border-radius:8px;display:block;width:100%}
-.lvlmap-key{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45}
-.daymap-note{flex-basis:100%;font-size:12px;color:var(--muted);line-height:1.5}
+.lvlmap svg{background:#eef3f9;border:1px solid var(--line);border-radius:8px;display:block;width:100%;cursor:zoom-in}
+.lvlmap-h::after{content:' ⤢';font-weight:600;color:var(--rec)}
+/* fullscreen map modal */
+.mapmodal{position:fixed;inset:0;z-index:100;background:rgba(8,20,40,.93);display:none;
+  align-items:center;justify-content:center;padding:10px}
+.mapmodal.show{display:flex}
+.mapmodal .mm-card{background:#fff;border-radius:12px;padding:12px;max-width:96vw;max-height:92vh;overflow:auto}
+.mapmodal .mm-card .lvlmap{max-width:none;width:min(94vw,720px)}
+.mapmodal .mm-card .lvlmap svg{cursor:zoom-out}
+.mapmodal .mm-card .lvlmap-h{font-size:16px}
+.mapmodal .mm-card .lvlmap-key{font-size:14px}
+.mm-close{position:fixed;top:12px;right:14px;z-index:101;background:rgba(255,255,255,.18);color:#fff;
+  border:0;width:40px;height:40px;border-radius:20px;font-size:20px;font-weight:700;cursor:pointer}
+.lvlmap-key{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+.daymap-note{flex-basis:100%;font-size:12.5px;color:var(--muted);line-height:1.5}
 
 /* ---- Dashboard ---- */
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
@@ -199,12 +220,12 @@ main{padding:12px var(--gut) 80px}
 
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .tools button{flex:1;min-width:120px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px;font-size:12.5px;font-weight:600;color:var(--ink)}
-.note{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.55}
+.note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.55}
 
 /* ---- Print plan ---- */
 .printhead{display:none}
 @media print{
-  header.app,.stickybar,nav.tabs,.filters,.statusrow,.roomrow,.recflip,.tools,.app-actions,.no-print{display:none!important}
+  .topbar,header.app,.stickybar,nav.tabs,.filters,.statusrow,.roomrow,.recflip,.tools,.app-actions,.no-print{display:none!important}
   body{background:#fff}
   main{padding:0;max-width:100%}
   .view{display:none!important}
@@ -218,6 +239,7 @@ main{padding:12px var(--gut) 80px}
 </style>
 </head>
 <body>
+<div class="topbar" id="topbar">
 <header class="app">
   <div class="app-title">
     <div>
@@ -242,6 +264,7 @@ main{padding:12px var(--gut) 80px}
   <button data-tab="help">ℹ️ Help</button>
 </nav>
 </div>
+</div>
 
 <main>
   <section class="view" id="view-browse"></section>
@@ -253,8 +276,9 @@ main{padding:12px var(--gut) 80px}
 </main>
 
 <div class="toast" id="toast"></div>
+<div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 
-<script src="data.js?v=2026-06-21.1"></script>
+<script src="data.js?v=2026-06-21.2"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -541,7 +565,14 @@ function renderLive(){
     setPick(b.dataset.from,'rec'); state.picks[b.dataset.swap]='live'; save(); renderRibbon(); renderActive();
     toast('Swapped to the closer session (old one → Later)');
   });
+  el.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m.innerHTML));
 }
+function openMapModal(innerHTML){
+  const card=document.getElementById('mmCard'); const modal=document.getElementById('mapModal');
+  card.innerHTML='<div class="lvlmap">'+innerHTML+'</div>';
+  modal.classList.add('show'); document.body.style.overflow='hidden';
+}
+function closeMapModal(){ const modal=document.getElementById('mapModal'); modal.classList.remove('show'); document.body.style.overflow=''; }
 /* walk score between two live sessions + closer-room suggestions */
 function transitionHTML(prev,s){
   const gap=s.startMin-prev.endMin;
@@ -918,7 +949,7 @@ function renderPlan(){
       dayNum++;
       const r=roomOf(s);
       html+=`<div class="scard is-live" style="margin-bottom:6px">
-        <h3 style="font-size:13.5px"><span class="snum">${dayNum}</span>${escapeHtml(s.title)}</h3>
+        <h3 style="font-size:14.5px"><span class="snum">${dayNum}</span>${escapeHtml(s.title)}</h3>
         <div class="meta" style="margin-bottom:0">
           <span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
           ${r?`<span><b>Room ${escapeHtml(r)}</b></span>`:`<span style="color:#b00">Room: ____</span>`}
@@ -933,7 +964,7 @@ function renderPlan(){
     for(const s of recs){
       const rurl=recUrlOf(s.id);
       html+=`<div class="scard is-rec" style="margin-bottom:6px">
-        <h3 style="font-size:13.5px">${escapeHtml(s.title)}</h3>
+        <h3 style="font-size:14.5px">${escapeHtml(s.title)}</h3>
         <div class="meta" style="margin-bottom:0"><span>${s.day} ${s.date}</span><span>${s.type}</span><span class="tag ce">${fmtCE(s.ce)} CE</span>${rurl?`<span>▶ <a href="${escapeAttr(rurl)}">recording link</a></span>`:''}</div>
       </div>`;
     }
@@ -941,7 +972,7 @@ function renderPlan(){
   if(state.manual.filter(m=>m.label||m.ceu).length){
     html+=`<div class="day-head" style="margin-top:14px">＋ Other CEUs · ${fmtCE(t.manual)} CE</div>`;
     for(const m of state.manual){ if(!(m.label||m.ceu)) continue;
-      html+=`<div class="scard" style="margin-bottom:6px"><h3 style="font-size:13.5px">${escapeHtml(m.label||'(untitled)')}</h3><div class="meta" style="margin-bottom:0"><span class="tag ce">${fmtCE(parseFloat(m.ceu)||0)} CE</span></div></div>`;
+      html+=`<div class="scard" style="margin-bottom:6px"><h3 style="font-size:14.5px">${escapeHtml(m.label||'(untitled)')}</h3><div class="meta" style="margin-bottom:0"><span class="tag ce">${fmtCE(parseFloat(m.ceu)||0)} CE</span></div></div>`;
     }
   }
   el.innerHTML=html;
@@ -1049,6 +1080,17 @@ document.getElementById('printBtn').onclick=()=>{ show('plan'); setTimeout(()=>w
 /* ---------- escaping ---------- */
 function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function escapeAttr(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* condense the title bar on scroll (title-only, thinner) */
+(function(){ const tb=document.getElementById('topbar'); if(!tb) return;
+  const on=()=>tb.classList.toggle('cond', (window.scrollY||0) > 6);
+  addEventListener('scroll', on, {passive:true}); on();
+})();
+/* map fullscreen modal: tap to close (toggle back) */
+(function(){ const modal=document.getElementById('mapModal'); if(!modal) return;
+  modal.addEventListener('click', closeMapModal);
+  addEventListener('keydown', e=>{ if(e.key==='Escape') closeMapModal(); });
+})();
 
 /* ---------- boot ---------- */
 // First-run preload: if she has no picks yet and hasn't been preloaded before,
