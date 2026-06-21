@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<title>Sarah's AANP 2026 CEU Planner</title>
+<title>AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.7';
+window.APP_VERSION = '2026-06-21.8';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -197,6 +197,8 @@ main{padding:12px var(--gut) 80px}
 .sd-field input,.sd-field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:14.5px;font-family:inherit}
 .sd-field textarea{min-height:54px;resize:vertical}
 .sd-openlink{display:inline-block;margin-top:2px;background:var(--rec-soft);color:var(--rec);border-radius:9px;padding:9px 12px;font-size:14px;font-weight:700;text-decoration:none}
+.sd-check{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:14.5px;font-weight:600;color:var(--brand-dk);cursor:pointer}
+.sd-check input{width:20px;height:20px;flex:0 0 auto}
 .sd-saved{font-size:12px;color:var(--live);font-weight:600;margin-left:6px}
 .moreinfo{color:var(--rec);font-weight:700}
 .nt-row{font-size:13.5px;color:var(--ink);margin-top:4px}
@@ -276,7 +278,7 @@ main{padding:12px var(--gut) 80px}
 <header class="app">
   <div class="app-title">
     <div>
-      <h1>Sarah's AANP CEU Planner</h1>
+      <h1>AANP 2026 CEU Planner</h1>
       <div class="sub">2026 National Conference · Venetian Expo, Las Vegas · Jun 23–27</div>
     </div>
     <button class="hbtn" id="printBtn">🖨️ Plan</button>
@@ -314,8 +316,8 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.7"></script>
-<script src="details.js?v=2026-06-21.7"></script>
+<script src="data.js?v=2026-06-21.8"></script>
+<script src="details.js?v=2026-06-21.8"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -328,7 +330,7 @@ const VENUE = {
 };
 // Real room coordinates (level + normalized x/y on that level's floor plan), from the AANP app bundle.
 const ROOMGEO = {"Level 4, Zeno 4601":{"lvl":4,"x":0.3104,"y":0.7532},"Level 5, Palazzo A-F":{"lvl":5,"x":0.6065,"y":0.3156},"Level 5, Palazzo B":{"lvl":5,"x":0.5974,"y":0.174},"Level 4, Zeno 4701":{"lvl":4,"x":0.4805,"y":0.7558},"Level 4, Lando 4201":{"lvl":4,"x":0.3247,"y":0.3338},"Level 4, Lando 4304":{"lvl":4,"x":0.5506,"y":0.4234},"Level 4, Marcello 4501":{"lvl":4,"x":0.3143,"y":0.6403},"Level 4, Marcello 4503":{"lvl":4,"x":0.474,"y":0.626},"Level 4, Marcello 4505":{"lvl":4,"x":0.6208,"y":0.6273},"Level 3, Lido 3103":{"lvl":3,"x":0.4706,"y":0.2558},"Level 3, Lido 3105":{"lvl":3,"x":0.6049,"y":0.2609},"Level 3, Murano 3201 B":{"lvl":3,"x":0.3389,"y":0.3939},"Level 3, Murano 3301 A":{"lvl":3,"x":0.3402,"y":0.4412},"Level 3, Murano 3303":{"lvl":3,"x":0.4744,"y":0.4642},"Level 3, Murano 3305":{"lvl":3,"x":0.6023,"y":0.454},"Level 3, San Polo 3503":{"lvl":3,"x":0.4744,"y":0.6624},"Level 3, Toscana 3601":{"lvl":3,"x":0.3223,"y":0.7532},"Level 3, Toscana 3701":{"lvl":3,"x":0.4834,"y":0.7609},"Level 4,  Zeno 4701":{"lvl":4,"x":0.4783,"y":0.7417},"Level 4, Delfino 4001":{"lvl":4,"x":0.3223,"y":0.1228},"Level 4, Delfino 4104":{"lvl":4,"x":0.5486,"y":0.2174},"Level 2, Expo Upper Lobby":{"lvl":2,"x":0.8159,"y":0.6317},"Level 2, Hall A":{"lvl":2,"x":0.4373,"y":0.8529},"Level 2, Hall C":{"lvl":2,"x":0.4207,"y":0.3926},"Level 3, Lido 3001 B":{"lvl":3,"x":0.3363,"y":0.202},"Level 3, Lido 3002":{"lvl":3,"x":0.4079,"y":0.1726},"Level 3, Lido 3101 A":{"lvl":3,"x":0.335,"y":0.234}};
-const SARAH_PICKS = ["26.1.058","26.1.068","26.2.006","26.2.031","26.2.046","26.2.070","26.2.112","26.2.127","26.3.014","26.3.040","26.3.070","26.3.097","26.3.120","26.4.013","26.4.028","26.4.045","26.4.098","26.4.119","26.5.116","26.1.078","26.3.083","26.5.115","26.2.005"];
+const PRELOAD_PICKS = ["26.1.058","26.1.068","26.2.006","26.2.031","26.2.046","26.2.070","26.2.112","26.2.127","26.3.014","26.3.040","26.3.070","26.3.097","26.3.120","26.4.013","26.4.028","26.4.045","26.4.098","26.4.119","26.5.116","26.1.078","26.3.083","26.5.115","26.2.005"];
 
 function geoOf(roomStr){ if(!roomStr) return null; if(ROOMGEO[roomStr]) return ROOMGEO[roomStr];
   const k=Object.keys(ROOMGEO).find(r=>r.replace(/\s+/g,' ').toLowerCase()===roomStr.replace(/\s+/g,' ').toLowerCase()); return k?ROOMGEO[k]:null; }
@@ -659,14 +661,15 @@ function openSessionModal(id){
     <div class="sd-field"><label>Presenter(s)</label><input data-sf="presenter" value="${escapeAttr(presenterVal)}" placeholder="Presenter name(s)"></div>
     <div class="sd-field"><label>Slides / handout / Google Drive link</label><input data-sf="slides" inputmode="url" value="${escapeAttr(slidesVal)}" placeholder="Paste a link (handout, Drive file, …)"></div>
     ${openUrl?`<a class="sd-openlink" href="${escapeAttr(openUrl)}" target="_blank" rel="noopener">📄 Open handouts / slides</a>`:''}
+    <label class="sd-check"><input type="checkbox" data-sf="saveSlides" ${saved.saveSlides?'checked':''}> ⭐ Save slides to My Notes</label>
     <div class="sd-field" style="margin-top:12px"><label>My notes</label><textarea data-sf="notes" placeholder="Type your notes for this session…">${escapeHtml(saved.notes||'')}</textarea></div>
     <button class="sd-done sd-done-bottom" id="sdDoneBottom">Done ✕</button>
   `;
   modal.classList.add('show'); document.body.style.overflow='hidden';
   const done=document.getElementById('sdDone'); if(done) done.onclick=closeSessModal;
   const doneB=document.getElementById('sdDoneBottom'); if(doneB) doneB.onclick=closeSessModal;
-  card.querySelectorAll('[data-sf]').forEach(inp=>inp.addEventListener('input',()=>{
-    const cur=state.detail[id]||(state.detail[id]={}); cur[inp.dataset.sf]=inp.value; save();
+  card.querySelectorAll('[data-sf]').forEach(inp=>inp.addEventListener(inp.type==='checkbox'?'change':'input',()=>{
+    const cur=state.detail[id]||(state.detail[id]={}); cur[inp.dataset.sf]=inp.type==='checkbox'?inp.checked:inp.value; save();
   }));
 }
 function closeSessModal(){ const m=document.getElementById('sessModal'); m.classList.remove('show'); document.body.style.overflow='';
@@ -855,7 +858,7 @@ function renderDash(){
      <h2>Already-earned CEUs (this renewal cycle)</h2>
      <div class="field"><label>Credits earned before the conference</label>
        <input type="number" id="priorInp" min="0" step="0.25" value="${t.prior}"></div>
-     <div class="note">Sarah said she already has ~10–15. Enter the exact number as you confirm it. AGACNP renewal requires <b>${TARGET}</b> CE hours.</div>
+     <div class="note">You said you already have ~10–15. Enter the exact number as you confirm it. AGACNP renewal requires <b>${TARGET}</b> CE hours.</div>
    </div>
 
    <div class="panel">
@@ -867,10 +870,10 @@ function renderDash(){
 
    <div class="panel no-print">
      <h2>🔄 Import from AANP app</h2>
-     <div class="tools"><button id="loadSarah" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections from AANP app</button></div>
-     <div class="note" style="margin-top:6px">Loads the 23 sessions Sarah picked in the AANP app, as Live. (Or open <b>?plan=sarah</b> on the site to auto-load.)</div>
+     <div class="tools"><button id="loadPresetBtn" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load my preset plan</button></div>
+     <div class="note" style="margin-top:6px">Loads the 23 preset sessions, as Live. (Or open <b>?plan</b> on the site to auto-load.)</div>
      <div class="tools" style="margin-top:8px"><button id="appImport">⬆︎ Import a file (.ics / JSON)</button></div>
-     <div class="note">Pull Sarah's chosen sessions and room numbers in from the AANP Conference app. Accepts a calendar export (<b>.ics</b>) or a JSON file (Tom can prep one from the app capture). Matched sessions are marked <b>Live</b> and rooms fill in automatically — your existing picks are kept. Unmatched items are logged so nothing is lost silently.</div>
+     <div class="note">Pull your chosen sessions and room numbers in from the AANP Conference app. Accepts a calendar export (<b>.ics</b>) or a JSON file (Tom can prep one from the app capture). Matched sessions are marked <b>Live</b> and rooms fill in automatically — your existing picks are kept. Unmatched items are logged so nothing is lost silently.</div>
      <input type="file" id="appFile" accept=".ics,.json,.csv,text/calendar,application/json" style="display:none">
    </div>
 
@@ -895,7 +898,7 @@ function renderDash(){
   document.getElementById('fileInp').onchange=doImport;
   document.getElementById('appImport').onclick=()=>document.getElementById('appFile').click();
   document.getElementById('appFile').onchange=importAppData;
-  document.getElementById('loadSarah').onclick=loadSarahPicks;
+  document.getElementById('loadPresetBtn').onclick=loadPreset;
   document.getElementById('resetBtn').onclick=()=>{ if(confirm('Erase all picks, rooms, and CEU entries? This cannot be undone.')){ state=JSON.parse(JSON.stringify(DEF)); save(); renderRibbon(); renderActive(); } };
 }
 function drawManual(){
@@ -916,7 +919,7 @@ function drawManual(){
 function doExport(){
   const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='sarah-aanp-ceu-plan.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  a.download='aanp-ceu-plan.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
   toast('Backup downloaded');
 }
 function doImport(e){
@@ -984,10 +987,10 @@ function downloadICS(){
   const live=SESS.filter(s=>pickOf(s.id)==='live' && s.startMin!=null && s.date)
     .sort((a,b)=>a.dayOrder-b.dayOrder||a.startMin-b.startMin);
   if(!live.length){ toast('No Live sessions to add yet'); return; }
-  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Sarah AANP CEU Planner//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:AANP 2026 Plan','X-WR-TIMEZONE:America/Los_Angeles'];
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AANP CEU Planner//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:AANP 2026 Plan','X-WR-TIMEZONE:America/Los_Angeles'];
   live.forEach(s=>{
     const end = s.endMin!=null ? s.endMin : s.startMin+60;
-    L.push('BEGIN:VEVENT',`UID:aanp-${s.id}@sarah-planner`,
+    L.push('BEGIN:VEVENT',`UID:aanp-${s.id}@aanp-planner`,
       `DTSTART:${icsDT(s.date,s.startMin)}`,`DTEND:${icsDT(s.date,end)}`,
       `SUMMARY:${icsEsc((s.code?s.code+' ':'')+s.title)}`);
     if(roomOf(s)) L.push(`LOCATION:${icsEsc(roomOf(s)+', The Venetian Convention & Expo Center')}`);
@@ -996,15 +999,15 @@ function downloadICS(){
   L.push('END:VCALENDAR');
   const blob=new Blob([L.join('\r\n')],{type:'text/calendar'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='sarah-aanp-2026-plan.ics'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  a.download='aanp-2026-plan.ics'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
   toast(`Calendar file with ${live.length} sessions downloaded`);
 }
 
-/* ---- one-tap: load Sarah's captured AANP selections as Live ---- */
-function loadSarahPicks(){
-  let n=0; SARAH_PICKS.forEach(code=>{ if(byId[code]){ state.picks[code]='live'; n++; } });
+/* ---- one-tap: load the preset selections as Live ---- */
+function loadPreset(){
+  let n=0; PRELOAD_PICKS.forEach(code=>{ if(byId[code]){ state.picks[code]='live'; n++; } });
   save(); renderRibbon(); renderActive();
-  toast(`Loaded ${n} of Sarah's sessions as Live`);
+  toast(`Loaded ${n} sessions as Live`);
 }
 
 /* ====================================================================== */
@@ -1019,13 +1022,13 @@ function renderPlan(){
 
   let html=`
    <div class="printhead">
-     <h1 style="margin:0 0 2px;font-size:20px">Sarah's AANP 2026 Conference Plan</h1>
+     <h1 style="margin:0 0 2px;font-size:20px">AANP 2026 Conference Plan</h1>
      <div style="color:#555;font-size:12px">AGACNP renewal · Target ${TARGET} CEUs · ${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026</div>
    </div>
    <div class="tools no-print" style="margin-bottom:12px">
      <button id="printNow">🖨️ Print / Save as PDF</button>
      <button id="icsBtn">📅 Add to Calendar</button>
-     <button id="loadSarahPlan" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load Sarah's selections from AANP app</button>
+     <button id="loadPresetPlan" style="background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dk);font-weight:700">✨ Load my preset plan</button>
    </div>
 
    <div class="bigprogress">
@@ -1080,7 +1083,7 @@ function renderPlan(){
 function bindPlanTools(){
   const p=document.getElementById('printNow'); if(p)p.onclick=()=>window.print();
   const ic=document.getElementById('icsBtn'); if(ic)ic.onclick=downloadICS;
-  const ls=document.getElementById('loadSarahPlan'); if(ls)ls.onclick=loadSarahPicks;
+  const ls=document.getElementById('loadPresetPlan'); if(ls)ls.onclick=loadPreset;
 }
 
 /* ====================================================================== */
@@ -1091,9 +1094,7 @@ function bindPlanTools(){
 /* ====================================================================== */
 function notesSessions(){
   const ids=new Set();
-  SESS.forEach(s=>{ const p=pickOf(s.id); if(p==='live'||p==='rec') ids.add(s.id); });
-  Object.keys(state.detail||{}).forEach(id=>{ const d=state.detail[id]; if(d&&(d.notes||d.slides||d.presenter)) ids.add(id); });
-  Object.keys(state.recUrls||{}).forEach(id=>{ if(state.recUrls[id]) ids.add(id); });
+  Object.keys(state.detail||{}).forEach(id=>{ const d=state.detail[id]; if(d && (d.saveSlides || (d.notes && d.notes.trim()))) ids.add(id); });
   return [...ids].map(id=>byId[id]).filter(Boolean).sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
 }
 function noteData(s){
@@ -1108,7 +1109,7 @@ function renderNotes(){
   let html=`
    <div class="panel no-print">
      <h2>📝 My Notes</h2>
-     <div class="note">Everything you've saved — presenters, slide/handout links, recordings and notes — in one place. Tap a session to edit. Export it to keep in Google Drive or a doc.</div>
+     <div class="note">Sessions where you checked <b>⭐ Save slides to My Notes</b> or typed a note — with presenter, slide/handout link and your notes. Tap a session to edit. Export to keep in Google Drive or a doc.</div>
      <div class="field" style="margin-top:10px"><label style="flex:0 0 auto">Google Drive folder</label>
        <input id="driveInp" type="url" inputmode="url" style="flex:1;width:auto;text-align:left" placeholder="Paste your Drive folder link" value="${escapeAttr(drive)}"></div>
      <div class="tools">
@@ -1118,7 +1119,7 @@ function renderNotes(){
      </div>
      <div class="note">Tip: paste a Drive link in each session's <b>Slides / Drive link</b> field, then export here and drop the file in your Drive folder.</div>
    </div>`;
-  if(!list.length){ html+=`<div class="empty"><b>No notes yet</b>Open a session's <b>ⓘ more info</b> and add a note or slide link — it shows up here.</div>`; el.innerHTML=html; bindNotes(); return; }
+  if(!list.length){ html+=`<div class="empty"><b>No notes yet</b>Open any session's <b>ⓘ more info</b>, then check <b>⭐ Save slides to My Notes</b> or type a note — it shows up here.</div>`; el.innerHTML=html; bindNotes(); return; }
   let curDay=null;
   for(const s of list){
     if(s.day!==curDay){ curDay=s.day; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
@@ -1140,7 +1141,7 @@ function bindNotes(){
   const cp=document.getElementById('notesCopy'); if(cp) cp.onclick=copyNotes;
 }
 function notesMarkdown(){
-  const t=totals(); let out=`# Sarah's AANP 2026 — Notes & Links\n\n_${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026 · ${fmtCE(t.total)}/${TARGET} CEUs_\n`;
+  const t=totals(); let out=`# AANP 2026 — Notes & Links\n\n_${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026 · ${fmtCE(t.total)}/${TARGET} CEUs_\n`;
   const list=notesSessions(); let day=null;
   for(const s of list){ if(s.day!==day){ day=s.day; out+=`\n## ${s.day} ${s.date}\n`; }
     const n=noteData(s);
@@ -1156,7 +1157,7 @@ function notesMarkdown(){
 }
 function exportNotesMd(){
   const blob=new Blob([notesMarkdown()],{type:'text/markdown'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sarah-aanp-notes.md'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='aanp-notes.md'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
   toast('Notes exported (Markdown)');
 }
 function fallbackCopy(txt){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');toast('Copied all notes');}catch(e){toast('Copy failed');} ta.remove(); }
@@ -1168,7 +1169,7 @@ function renderHelp(){
   const el=document.getElementById('view-help');
   el.innerHTML=`
    <div class="panel">
-     <h2>👋 Welcome, Sarah</h2>
+     <h2>👋 Welcome</h2>
      <div class="hp">This planner holds all <b>393 sessions</b> from the 2026 AANP National Conference (Las Vegas, Jun 23–27). Use it to pick what to attend live, what to catch by recording, and to watch your CEUs add up toward the <b>${TARGET}</b> you need for AGACNP renewal. Everything saves automatically on this device — no login.</div>
    </div>
 
@@ -1278,17 +1279,17 @@ addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeMapModal(); closeSes
 
 /* ---------- boot ---------- */
 // First-run preload: if she has no picks yet and hasn't been preloaded before,
-// load Sarah's AANP selections automatically. Won't re-add after she clears them.
+// load the preset selections automatically. Won't re-add once cleared.
 if(!state._preloaded && Object.keys(state.picks).length===0){
   state._preloaded=true;
-  SARAH_PICKS.forEach(c=>{ if(byId[c]) state.picks[c]='live'; });
+  PRELOAD_PICKS.forEach(c=>{ if(byId[c]) state.picks[c]='live'; });
   save();
 }
 renderRibbon();
 show('browse');
 try{
-  if(new URLSearchParams(location.search).get('plan')==='sarah'){
-    loadSarahPicks();
+  if(new URLSearchParams(location.search).get('plan')){
+    loadPreset();
     history.replaceState(null,'',location.pathname);
     show('live');
   }
