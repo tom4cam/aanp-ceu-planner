@@ -7,7 +7,7 @@
 <title>AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.9';
+window.APP_VERSION = '2026-06-21.10';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -316,8 +316,8 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.9"></script>
-<script src="details.js?v=2026-06-21.9"></script>
+<script src="data.js?v=2026-06-21.10"></script>
+<script src="details.js?v=2026-06-21.10"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -1113,15 +1113,11 @@ function renderNotes(){
   let html=`
    <div class="panel no-print">
      <h2>📝 My Notes</h2>
-     <div class="note">Sessions where you checked <b>⭐ Save slides to My Notes</b> or typed a note — with presenter, slide/handout link and your notes. Tap a session to edit. Export to keep in Google Drive or a doc.</div>
-     <div class="field" style="margin-top:10px"><label style="flex:0 0 auto">Google Drive folder</label>
-       <input id="driveInp" type="url" inputmode="url" style="flex:1;width:auto;text-align:left" placeholder="Paste your Drive folder link" value="${escapeAttr(drive)}"></div>
-     <div class="tools">
-       ${drive?`<button id="driveOpen">📂 Open Drive folder</button>`:''}
-       <button id="notesMd">⬇︎ Export notes (Markdown)</button>
-       <button id="notesCopy">📋 Copy all</button>
+     <div class="note">Sessions where you checked <b>⭐ Save slides to My Notes</b> or typed a note. Tap a session to edit.</div>
+     <div class="tools" style="margin-top:10px">
+       <button id="notesCopy">📋 Copy All Notes</button>
+       <button id="driveOpen">📂 Open Google Drive folder</button>
      </div>
-     <div class="note">Tip: paste a Drive link in each session's <b>Slides / Drive link</b> field, then export here and drop the file in your Drive folder.</div>
    </div>`;
   if(!list.length){ html+=`<div class="empty"><b>No notes yet</b>Open any session's <b>ⓘ more info</b>, then check <b>⭐ Save slides to My Notes</b> or type a note — it shows up here.</div>`; el.innerHTML=html; bindNotes(); return; }
   let curDay=null;
@@ -1139,33 +1135,25 @@ function renderNotes(){
   el.innerHTML=html; bindNotes();
 }
 function bindNotes(){
-  const di=document.getElementById('driveInp'); if(di) di.addEventListener('input',()=>{ state.driveFolder=di.value.trim(); save(); });
   const dopen=document.getElementById('driveOpen'); if(dopen) dopen.onclick=()=>{ window.open(state.driveFolder||DRIVE_FOLDER,'_blank'); };
-  const md=document.getElementById('notesMd'); if(md) md.onclick=exportNotesMd;
   const cp=document.getElementById('notesCopy'); if(cp) cp.onclick=copyNotes;
 }
-function notesMarkdown(){
-  const t=totals(); let out=`# AANP 2026 — Notes & Links\n\n_${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026 · ${fmtCE(t.total)}/${TARGET} CEUs_\n`;
+function notesText(){
+  const t=totals(); let out=`AANP 2026 — Notes\n${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026 · ${fmtCE(t.total)}/${TARGET} CEUs\n`;
   const list=notesSessions(); let day=null;
-  for(const s of list){ if(s.day!==day){ day=s.day; out+=`\n## ${s.day} ${s.date}\n`; }
-    const n=noteData(s);
-    out+=`\n### ${(s.code?s.code+' ':'')}${s.title}\n`;
-    out+=`- ${s.start||''}${s.end?'–'+s.end:''}${roomOf(s)?` · ${roomOf(s)}`:''} · ${fmtCE(s.ce)} CE${pickOf(s.id)==='live'?' · Live':pickOf(s.id)==='rec'?' · Watch Later':''}\n`;
-    if(n.presenter) out+=`- Presenter: ${n.presenter}\n`;
-    if(n.handout) out+=`- Handout: ${n.handout}\n`;
-    if(n.slides && n.slides!==n.handout) out+=`- Slides/Drive: ${n.slides}\n`;
-    if(n.rec) out+=`- Recording: ${n.rec}\n`;
-    if(n.notes) out+=`- Notes: ${n.notes.replace(/\r?\n/g,' ')}\n`;
+  for(const s of list){ if(s.day!==day){ day=s.day; out+=`\n${s.day} ${s.date}\n`; }
+    const n=noteData(s); const slideUrl=/^https?:/.test(n.slides)?n.slides:n.handout;
+    out+=`\n${(s.code?s.code+' ':'')}${s.title}\n`;
+    out+=`  ${s.start||''}${s.end?'–'+s.end:''}${roomOf(s)?` · ${roomOf(s)}`:''} · ${fmtCE(s.ce)} CE\n`;
+    if(n.presenter) out+=`  Presenter: ${n.presenter}\n`;
+    if(slideUrl) out+=`  Slides: ${slideUrl}\n`;
+    if(n.rec) out+=`  Recording: ${n.rec}\n`;
+    if(n.notes) out+=`  Notes: ${n.notes.replace(/\r?\n/g,' ')}\n`;
   }
   return out;
 }
-function exportNotesMd(){
-  const blob=new Blob([notesMarkdown()],{type:'text/markdown'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='aanp-notes.md'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500);
-  toast('Notes exported (Markdown)');
-}
 function fallbackCopy(txt){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');toast('Copied all notes');}catch(e){toast('Copy failed');} ta.remove(); }
-function copyNotes(){ const txt=notesMarkdown();
+function copyNotes(){ const txt=notesText();
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(()=>toast('Copied all notes')).catch(()=>fallbackCopy(txt));
   else fallbackCopy(txt); }
 
