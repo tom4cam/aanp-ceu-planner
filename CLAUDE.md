@@ -8,6 +8,11 @@ state in the browser's localStorage.
 - **Repo:** https://github.com/tom4cam/aanp-ceu-planner (public; GitHub Pages from `main` root)
 - **Local:** `~/Library/CloudStorage/Dropbox/ai-other-projects/aanp-ceu-planner/`
 
+> **⏪ Where we ended (2026-06-21):** My Notes → Drive is built, deployed, and verified — the Apps
+> Script lives under sarahspendlovenp@gmail.com and copies exactly the checked sessions (17 decks
+> already copied). **The only thing left:** on Sarah's device, open the planner → My Notes → tap
+> **📥 Copy slide PDFs to Drive** and paste the deployed `/exec` URL once. After that it's one-tap.
+
 ## How to resume work later
 1. Open this folder, read this file (current state + next steps below).
 2. From inside the folder, run `claude --continue` (most recent chat here) or `claude --resume`
