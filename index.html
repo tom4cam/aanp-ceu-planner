@@ -7,7 +7,7 @@
 <title>Sarah's AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.3';
+window.APP_VERSION = '2026-06-21.4';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -173,6 +173,23 @@ main{padding:12px var(--gut) 80px}
 .mm-key{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5;flex:0 0 auto}
 .mm-close{position:fixed;top:12px;right:14px;z-index:101;background:rgba(255,255,255,.18);color:#fff;
   border:0;width:40px;height:40px;border-radius:20px;font-size:20px;font-weight:700;cursor:pointer}
+/* session detail sheet */
+.sheet{position:fixed;inset:0;z-index:100;background:rgba(8,20,40,.55);display:none;justify-content:center;align-items:flex-end}
+.sheet.show{display:flex}
+.sheet-card{background:#fff;width:min(100%,760px);max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;
+  padding:18px 16px calc(28px + env(safe-area-inset-bottom,0));box-shadow:0 -6px 24px rgba(0,0,0,.25)}
+@media(min-width:680px){ .sheet{align-items:center} .sheet-card{border-radius:16px} }
+.sd-title{font-size:19px;font-weight:700;line-height:1.3;margin:0 6px 8px 0}
+.sd-meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+.sd-cered{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.sd-h{font-size:13px;font-weight:700;color:var(--brand-dk);text-transform:uppercase;letter-spacing:.4px;margin:16px 0 6px}
+.sd-desc{font-size:14.5px;line-height:1.55;white-space:pre-wrap;color:var(--ink)}
+.sd-field{margin-bottom:10px}
+.sd-field label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.sd-field input,.sd-field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:14.5px;font-family:inherit}
+.sd-field textarea{min-height:54px;resize:vertical}
+.sd-openlink{display:inline-block;margin-top:2px;background:var(--rec-soft);color:var(--rec);border-radius:9px;padding:9px 12px;font-size:14px;font-weight:700;text-decoration:none}
+.sd-saved{font-size:12px;color:var(--live);font-weight:600;margin-left:6px}
 .lvlmap-key{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
 .daymap-note{flex-basis:100%;font-size:12.5px;color:var(--muted);line-height:1.5}
 
@@ -228,7 +245,7 @@ main{padding:12px var(--gut) 80px}
 /* ---- Print plan ---- */
 .printhead{display:none}
 @media print{
-  .topbar,header.app,.stickybar,nav.tabs,.filters,.statusrow,.roomrow,.recflip,.tools,.app-actions,.no-print{display:none!important}
+  .topbar,header.app,.stickybar,nav.tabs,.filters,.statusrow,.roomrow,.recflip,.tools,.app-actions,.mapmodal,.sheet,.no-print{display:none!important}
   body{background:#fff}
   main{padding:0;max-width:100%}
   .view{display:none!important}
@@ -280,8 +297,10 @@ main{padding:12px var(--gut) 80px}
 
 <div class="toast" id="toast"></div>
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
+<div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.3"></script>
+<script src="data.js?v=2026-06-21.4"></script>
+<script src="details.js?v=2026-06-21.4"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -333,7 +352,7 @@ function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], _seedM_:false, _preloaded:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, _seedM_:false, _preloaded:false};
 let state = load();
 function load(){
   try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
@@ -523,7 +542,7 @@ function cardHTML(s,withControls){
     <div class="roomrow">
       <label>Room</label>
       <input type="text" placeholder="add room #" value="${escapeAttr(roomOf(s))}" data-room="${s.id}">
-      <a class="recflip" href="${VENUE.floorplan}" target="_blank" rel="noopener">📍 map</a>
+      <button class="recflip" data-more="${s.id}">ⓘ more info</button>
     </div>`:''}
   </div>`;
 }
@@ -601,6 +620,36 @@ function setupZoom(stage, zoom){
   stage.addEventListener('dblclick',()=>{ scale=scale>1.95?1.9:3.4; tx=0; ty=0; apply(); });
   stage.addEventListener('wheel',e=>{ e.preventDefault(); scale=Math.min(7,Math.max(1,scale*(e.deltaY<0?1.12:0.89))); apply(); },{passive:false});
 }
+/* session detail sheet: full description, presenters, handout/slides — with savable fields */
+function openSessionModal(id){
+  const s=byId[id]; if(!s) return;
+  const d=(window.DETAILS&&window.DETAILS[id])||{};
+  const saved=state.detail[id]||{};
+  const presenterVal = saved.presenter!=null ? saved.presenter : (d.presenters||[]).join('; ');
+  const slidesVal = saved.slides!=null ? saved.slides : (d.handout||'');
+  const openUrl = /^https?:\/\//.test(slidesVal) ? slidesVal : (d.handout||'');
+  const card=document.getElementById('sessCard'), modal=document.getElementById('sessModal');
+  card.innerHTML=`
+    <div class="sd-title">${escapeHtml(s.title)}</div>
+    <div class="sd-meta">
+      <span><b>${s.day} ${s.date}</b></span><span><b>${s.start||''}${s.end?'–'+s.end:''}</b></span>
+      ${roomOf(s)?`<span class="tag room">📍 ${escapeHtml(roomOf(s))}</span>`:''}
+      <span>${s.type}</span>${s.level?`<span>${s.level}</span>`:''}
+      <span class="tag ce">${fmtCE(s.ce)} CE</span>
+    </div>
+    ${d.ceDetail?`<div class="sd-cered">${escapeHtml(d.ceDetail)}</div>`:''}
+    ${d.desc?`<div class="sd-h">Description</div><div class="sd-desc">${escapeHtml(d.desc)}</div>`:'<div class="sd-cered">No description available.</div>'}
+    <div class="sd-h">Presenter &amp; slides <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">· saved automatically</span></div>
+    <div class="sd-field"><label>Presenter(s)</label><input data-sf="presenter" value="${escapeAttr(presenterVal)}" placeholder="Presenter name(s)"></div>
+    <div class="sd-field"><label>Slides / handout link or notes</label><input data-sf="slides" value="${escapeAttr(slidesVal)}" placeholder="Paste a link or notes"></div>
+    ${openUrl?`<a class="sd-openlink" href="${escapeAttr(openUrl)}" target="_blank" rel="noopener">📄 Open handouts / slides</a>`:''}
+  `;
+  modal.classList.add('show'); document.body.style.overflow='hidden';
+  card.querySelectorAll('[data-sf]').forEach(inp=>inp.addEventListener('input',()=>{
+    const cur=state.detail[id]||(state.detail[id]={}); cur[inp.dataset.sf]=inp.value; save();
+  }));
+}
+function closeSessModal(){ const m=document.getElementById('sessModal'); m.classList.remove('show'); document.body.style.overflow=''; }
 /* walk score between two live sessions + closer-room suggestions */
 function transitionHTML(prev,s){
   const gap=s.startMin-prev.endMin;
@@ -670,7 +719,7 @@ function cardLiveHTML(s,isConf,num){
     <div class="roomrow">
       <label>Room</label>
       <input type="text" placeholder="add room #" value="${escapeAttr(roomOf(s))}" data-room="${s.id}">
-      <a class="recflip" href="${VENUE.floorplan}" target="_blank" rel="noopener">📍 map</a>
+      <button class="recflip" data-more="${s.id}">ⓘ more info</button>
       <button class="recflip" data-drop="${s.id}">remove</button>
     </div>
   </div>`;
@@ -1040,10 +1089,9 @@ function renderHelp(){
 
    <div class="panel">
      <h2>2 · Rooms &amp; your foot 🦶</h2>
-     <div class="hp">The conference is at <b>${VENUE.name}</b>, ${VENUE.city}. AANP assigns room numbers closer to the event (usually in the official app/program) — they aren't published yet. As they're announced, type each into the <b>Room</b> box on the session. Every room field has a <b>📍 map</b> link to the venue floor plan so you can see where it is.
-       <div class="legrow" style="margin-top:8px">🗺️ <a href="${VENUE.floorplan}" target="_blank" rel="noopener">Venetian Expo floor plan</a></div>
-       <div class="legrow">📍 <a href="${VENUE.maps}" target="_blank" rel="noopener">Open venue in Google Maps</a></div>
-       <div style="margin-top:8px">In <b>Live Schedule</b> the app shows your rooms in order and flags <span style="color:var(--warn);font-weight:600">tight transitions</span> (under 25 minutes between back-to-back sessions) so you can plan the walk and avoid rushing.</div>
+     <div class="hp">The conference is at <b>${VENUE.name}</b>, ${VENUE.city}. Every session shows its real <b>room</b> (you can edit it). Tap <b>ⓘ more info</b> on any session for the full description, presenter(s), and handout/slides link.
+       <div class="legrow" style="margin-top:8px">🗺️ <a href="${VENUE.maps}" target="_blank" rel="noopener">Open venue in Google Maps</a></div>
+       <div style="margin-top:8px">In <b>My Map</b> the app draws your rooms on the real venue floor plan (tap a map to zoom), numbers them in order, and flags <span style="color:var(--warn);font-weight:600">far walks</span> (different floor or long distance) with closer suggestions — handy for the foot. 🦶</div>
      </div>
    </div>
 
@@ -1114,12 +1162,18 @@ function escapeAttr(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'
   const on=()=>tb.classList.toggle('cond', (window.scrollY||0) > 6);
   addEventListener('scroll', on, {passive:true}); on();
 })();
-/* map fullscreen modal: tap to close (toggle back) */
+/* map fullscreen modal: tap backdrop / ✕ / Esc to close */
 (function(){ const modal=document.getElementById('mapModal'); if(!modal) return;
   modal.addEventListener('click', e=>{ if(e.target===modal) closeMapModal(); });
   const c=document.getElementById('mmClose'); if(c) c.onclick=closeMapModal;
-  addEventListener('keydown', e=>{ if(e.key==='Escape') closeMapModal(); });
 })();
+/* session detail sheet: open via any "more info"; close via backdrop / ✕ / Esc */
+(function(){ const modal=document.getElementById('sessModal'); if(!modal) return;
+  document.addEventListener('click', e=>{ const b=e.target.closest('[data-more]'); if(b){ e.preventDefault(); openSessionModal(b.dataset.more); } });
+  modal.addEventListener('click', e=>{ if(e.target===modal) closeSessModal(); });
+  const c=document.getElementById('sessClose'); if(c) c.onclick=closeSessModal;
+})();
+addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeMapModal(); closeSessModal(); } });
 
 /* ---------- boot ---------- */
 // First-run preload: if she has no picks yet and hasn't been preloaded before,
