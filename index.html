@@ -7,7 +7,7 @@
 <title>Sarah's AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.2';
+window.APP_VERSION = '2026-06-21.3';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -163,11 +163,14 @@ main{padding:12px var(--gut) 80px}
 .mapmodal{position:fixed;inset:0;z-index:100;background:rgba(8,20,40,.93);display:none;
   align-items:center;justify-content:center;padding:10px}
 .mapmodal.show{display:flex}
-.mapmodal .mm-card{background:#fff;border-radius:12px;padding:12px;max-width:96vw;max-height:92vh;overflow:auto}
-.mapmodal .mm-card .lvlmap{max-width:none;width:min(94vw,720px)}
-.mapmodal .mm-card .lvlmap svg{cursor:zoom-out}
-.mapmodal .mm-card .lvlmap-h{font-size:16px}
-.mapmodal .mm-card .lvlmap-key{font-size:14px}
+.mapmodal .mm-card{background:#fff;border-radius:12px;padding:10px;width:min(96vw,760px);max-height:94vh;display:flex;flex-direction:column}
+.mm-head{font-size:16px;font-weight:700;color:var(--brand-dk);text-align:center;margin-bottom:2px}
+.mm-hint{font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:7px}
+.mm-stage{position:relative;width:100%;aspect-ratio:1;overflow:hidden;touch-action:none;cursor:grab;border-radius:8px;background:#eef3f9}
+.mm-stage:active{cursor:grabbing}
+.mm-zoom{width:100%;height:100%;will-change:transform}
+.mm-zoom svg{width:100%;height:100%;display:block}
+.mm-key{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5;flex:0 0 auto}
 .mm-close{position:fixed;top:12px;right:14px;z-index:101;background:rgba(255,255,255,.18);color:#fff;
   border:0;width:40px;height:40px;border-radius:20px;font-size:20px;font-weight:700;cursor:pointer}
 .lvlmap-key{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
@@ -278,7 +281,7 @@ main{padding:12px var(--gut) 80px}
 <div class="toast" id="toast"></div>
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 
-<script src="data.js?v=2026-06-21.2"></script>
+<script src="data.js?v=2026-06-21.3"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -565,14 +568,39 @@ function renderLive(){
     setPick(b.dataset.from,'rec'); state.picks[b.dataset.swap]='live'; save(); renderRibbon(); renderActive();
     toast('Swapped to the closer session (old one → Later)');
   });
-  el.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m.innerHTML));
+  el.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
 }
-function openMapModal(innerHTML){
-  const card=document.getElementById('mmCard'); const modal=document.getElementById('mapModal');
-  card.innerHTML='<div class="lvlmap">'+innerHTML+'</div>';
+function openMapModal(lvlmapEl){
+  const card=document.getElementById('mmCard'), modal=document.getElementById('mapModal');
+  const h=lvlmapEl.querySelector('.lvlmap-h'), svg=lvlmapEl.querySelector('svg'), key=lvlmapEl.querySelector('.lvlmap-key');
+  card.innerHTML=`<div class="mm-head">${h?escapeHtml(h.textContent.replace('⤢','').trim()):''}</div>`+
+    `<div class="mm-hint">pinch or scroll to zoom · drag to pan · double-tap to reset · ✕ to close</div>`+
+    `<div class="mm-stage"><div class="mm-zoom">${svg?svg.outerHTML:''}</div></div>`+
+    `<div class="mm-key">${key?key.innerHTML:''}</div>`;
   modal.classList.add('show'); document.body.style.overflow='hidden';
+  setupZoom(card.querySelector('.mm-stage'), card.querySelector('.mm-zoom'));
 }
 function closeMapModal(){ const modal=document.getElementById('mapModal'); modal.classList.remove('show'); document.body.style.overflow=''; }
+/* pinch-zoom + pan for the fullscreen map (starts zoomed in) */
+function setupZoom(stage, zoom){
+  let scale=1.9, tx=0, ty=0;
+  const pts=new Map(); let bDist=0, bScale=1, bMid={x:0,y:0}, bTx=0, bTy=0;
+  const apply=()=>{ zoom.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`; };
+  zoom.style.transformOrigin='center center'; apply();
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y), mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+  stage.addEventListener('pointerdown',e=>{ stage.setPointerCapture(e.pointerId);
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2){ const[a,b]=[...pts.values()]; bDist=dist(a,b)||1; bScale=scale; bMid=mid(a,b); bTx=tx; bTy=ty; } });
+  stage.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId))return;
+    const prev=pts.get(e.pointerId); pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===1){ tx+=e.clientX-prev.x; ty+=e.clientY-prev.y; apply(); }
+    else if(pts.size>=2){ const[a,b]=[...pts.values()]; scale=Math.min(7,Math.max(1,bScale*(dist(a,b)/bDist)));
+      const m=mid(a,b); tx=bTx+(m.x-bMid.x); ty=bTy+(m.y-bMid.y); apply(); } });
+  const up=e=>{ pts.delete(e.pointerId); if(pts.size===1){ const[a,b]=[...pts.values()]; bDist=0; } };
+  stage.addEventListener('pointerup',up); stage.addEventListener('pointercancel',up);
+  stage.addEventListener('dblclick',()=>{ scale=scale>1.95?1.9:3.4; tx=0; ty=0; apply(); });
+  stage.addEventListener('wheel',e=>{ e.preventDefault(); scale=Math.min(7,Math.max(1,scale*(e.deltaY<0?1.12:0.89))); apply(); },{passive:false});
+}
 /* walk score between two live sessions + closer-room suggestions */
 function transitionHTML(prev,s){
   const gap=s.startMin-prev.endMin;
@@ -1088,7 +1116,8 @@ function escapeAttr(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'
 })();
 /* map fullscreen modal: tap to close (toggle back) */
 (function(){ const modal=document.getElementById('mapModal'); if(!modal) return;
-  modal.addEventListener('click', closeMapModal);
+  modal.addEventListener('click', e=>{ if(e.target===modal) closeMapModal(); });
+  const c=document.getElementById('mmClose'); if(c) c.onclick=closeMapModal;
   addEventListener('keydown', e=>{ if(e.key==='Escape') closeMapModal(); });
 })();
 
