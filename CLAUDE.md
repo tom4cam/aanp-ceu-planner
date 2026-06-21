@@ -35,16 +35,19 @@ state in the browser's localStorage.
 Goal: one tap copies the real slide-deck PDFs for chosen sessions into Sarah's Drive folder.
 - App side: **📥 Copy slide PDFs to Drive** (`copySlidesToDrive()` in index.html) opens the user's
   deployed Apps Script `/exec` URL (stored once via prompt in `state.driveScriptUrl`).
-- Server side: `~/aanp-capture/copy-slides.gs` — `doGet()` runs `copySlides()`, which fetches
+- Server side: `apps-script/copy-slides.gs` (in this repo; also lives at `~/aanp-capture/`) —
+  `doGet(e)` reads `e.parameter.codes` and runs `copySlides(codes)`, which fetches
   `https://files.aanpdownload.org/2026/Natl/doc/{code}.pdf` per session, skips the ~57794-byte
   AANP placeholder and anything already in the folder (dedup), and copies the rest.
   Folder id is hardcoded (`FOLDER_ID`); deploy as Web app, Execute as Me, Anyone with link.
-- **Open thread:** the script's `SESSIONS` list is a static snapshot of Sarah's 23 picks. The app
-  passes no parameters, so it copies that fixed list — NOT whatever is currently checked in the app.
-  Next step is to have the app pass the checked session codes and the script copy exactly those.
+- The app now passes the checked session codes (`?codes=26.1.058,...`) so the script copies exactly
+  what's checked. Opened directly with no codes, it falls back to every session in `SESSIONS`.
+- **Redeploy needed when the .gs changes:** paste the file into script.google.com, Deploy →
+  Manage deployments → edit → Version: New version. The `/exec` URL stays the same.
 
 ## Next steps / open threads
-- [ ] Close the loop above: app passes `?codes=...` to the Apps Script; `doGet(e)` copies only those.
+- [ ] Redeploy `apps-script/copy-slides.gs` once (it now reads `?codes=`), then verify a checked
+      session's PDF lands in the Drive folder.
 - [ ] After AANP assigns/updates rooms, re-capture and rebuild (`build_data.py` merges `rooms.json`).
 
 ## Reverse-engineering notes (rooms, picks, slides)

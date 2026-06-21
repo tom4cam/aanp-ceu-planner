@@ -7,7 +7,7 @@
 <title>AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.13';
+window.APP_VERSION = '2026-06-21.14';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -317,8 +317,8 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.13"></script>
-<script src="details.js?v=2026-06-21.13"></script>
+<script src="data.js?v=2026-06-21.14"></script>
+<script src="details.js?v=2026-06-21.14"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -1147,7 +1147,12 @@ function bindNotes(){
 function copySlidesToDrive(){
   let u=state.driveScriptUrl;
   if(!u){ u=prompt('One-time: paste your "Copy slides" Apps Script web-app URL (ends in /exec). See setup in the notes Tom shared.',''); if(!u) return; u=u.trim(); if(!/^https?:\/\//.test(u)){ toast('That doesn\'t look like a URL'); return; } state.driveScriptUrl=u; save(); }
-  window.open(u,'_blank'); toast('Copying slides to Drive…');
+  // Pass exactly the sessions checked in the app so the script copies those (not a fixed list).
+  const codes=notesSessions().map(s=>s.code).filter(Boolean);
+  if(!codes.length){ toast('Check ⭐ Save slides on some sessions first'); return; }
+  const sep=u.indexOf('?')>=0?'&':'?';
+  window.open(u+sep+'codes='+encodeURIComponent(codes.join(',')),'_blank');
+  toast('Copying '+codes.length+' deck(s) to Drive…');
 }
 function notesText(){
   const t=totals(); let out=`AANP 2026 — Notes\n${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026 · ${fmtCE(t.total)}/${TARGET} CEUs\n`;
