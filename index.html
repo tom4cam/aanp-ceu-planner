@@ -1301,8 +1301,11 @@ try{
   let dv=q.get('drive');
   if(dv){ dv=dv.trim(); if(/^[A-Za-z0-9_-]{20,}$/.test(dv)) dv='https://drive.google.com/drive/folders/'+dv;
     state.driveFolder=dv; save(); }
+  // private one-time seed of the Apps Script /exec URL — tap a link instead of pasting it on a phone
+  let sc=q.get('script');
+  if(sc){ sc=sc.trim(); if(/^https:\/\/script\.google\.com\/.*\/exec/.test(sc)){ state.driveScriptUrl=sc; save(); } }
   if(q.get('plan')){ loadPreset(); show('live'); }
-  if(dv || q.get('plan')) history.replaceState(null,'',location.pathname);
+  if(dv || sc || q.get('plan')) history.replaceState(null,'',location.pathname);
 }catch(e){}
 </script>
 </body>
