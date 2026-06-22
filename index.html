@@ -1182,14 +1182,22 @@ function renderNotes(){
 }
 function bindNotes(){
   const dopen=document.getElementById('driveOpen'); if(dopen) dopen.onclick=()=>{
-    let u=state.driveFolder; if(!u){ u=prompt('Paste your Google Drive folder link:',''); if(!u) return; u=u.trim(); state.driveFolder=u; save(); }
+    let u=state.driveFolder;
+    // self-heal: if a script /exec URL got saved here by mistake, clear it and re-prompt
+    if(u && /script\.google\.com|\/exec\b/i.test(u)){ toast('That saved value was the slide-copy URL, not a Drive folder — please re-enter the folder link.'); state.driveFolder=''; save(); u=''; }
+    if(!u){ u=prompt('Paste your Google Drive folder link:',''); if(!u) return; u=u.trim();
+      if(/script\.google\.com|\/exec\b/i.test(u)){ toast('That looks like the slide-copy /exec URL — use 📥 Copy slide PDFs for that, not this field.'); return; }
+      state.driveFolder=u; save(); }
     window.open(u,'_blank'); };
   const cp=document.getElementById('notesCopy'); if(cp) cp.onclick=copyNotes;
   const cs=document.getElementById('copySlides'); if(cs) cs.onclick=copySlidesToDrive;
 }
 function copySlidesToDrive(){
   let u=state.driveScriptUrl;
-  if(!u){ u=prompt('One-time: paste your "Copy slides" Apps Script web-app URL (ends in /exec). See setup in the notes Tom shared.',''); if(!u) return; u=u.trim(); if(!/^https?:\/\//.test(u)){ toast('That doesn\'t look like a URL'); return; } state.driveScriptUrl=u; save(); }
+  if(!u){ u=prompt('One-time: paste your "Copy slides" Apps Script web-app URL (ends in /exec). See setup in the notes Tom shared.',''); if(!u) return; u=u.trim();
+    if(!/^https?:\/\//.test(u)){ toast('That doesn\'t look like a URL'); return; }
+    if(/drive\.google\.com|docs\.google\.com/i.test(u) || !/\/exec\b/i.test(u)){ toast('That looks like a Drive folder link, not the /exec script URL — use 📂 Open Google Drive folder for that.'); return; }
+    state.driveScriptUrl=u; save(); }
   // Pass exactly the sessions checked in the app so the script copies those (not a fixed list).
   const codes=notesSessions().map(s=>s.code).filter(Boolean);
   if(!codes.length){ toast('Check ⭐ Save slides on some sessions first'); return; }
