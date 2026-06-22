@@ -8,10 +8,16 @@ state in the browser's localStorage.
 - **Repo:** https://github.com/tom4cam/aanp-ceu-planner (public; GitHub Pages from `main` root)
 - **Local:** `~/Library/CloudStorage/Dropbox/ai-other-projects/aanp-ceu-planner/`
 
-> **⏪ Where we ended (2026-06-21):** My Notes → Drive is built, deployed, and verified — the Apps
-> Script lives under sarahspendlovenp@gmail.com and copies exactly the checked sessions (17 decks
-> already copied). **The only thing left:** on Sarah's device, open the planner → My Notes → tap
-> **📥 Copy slide PDFs to Drive** and paste the deployed `/exec` URL once. After that it's one-tap.
+> **⏪ Where we ended (2026-06-21):** My Notes → Drive is built, deployed, verified, and **fully
+> wired end-to-end**. The Apps Script lives under sarahspendlovenp@gmail.com and copies exactly the
+> checked sessions. The deployed `/exec` URL is now delivered to Sarah's device via a `?script=`
+> seed link (no manual paste) — send her the one-tap link below; after she opens it once, *My Notes
+> → 📥 Copy slide PDFs to Drive* is one tap. **Nothing left to do.**
+>
+> One-tap setup link (private — keep out of the public repo / commits):
+> `https://tom4cam.github.io/aanp-ceu-planner/?plan=sarah&script=<the /exec URL>`
+> The deployed `/exec` URL is in Sarah's deployment: script editor → Deploy → Manage deployments →
+> Web app URL (ends in `/exec`). Not stored in this repo by design.
 
 ## How to resume work later
 1. Open this folder, read this file (current state + next steps below).
@@ -39,7 +45,12 @@ state in the browser's localStorage.
 ## My Notes → Google Drive (slide PDFs)
 Goal: one tap copies the real slide-deck PDFs for chosen sessions into Sarah's Drive folder.
 - App side: **📥 Copy slide PDFs to Drive** (`copySlidesToDrive()` in index.html) opens the user's
-  deployed Apps Script `/exec` URL (stored once via prompt in `state.driveScriptUrl`).
+  deployed Apps Script `/exec` URL (stored in `state.driveScriptUrl`).
+- **Seeding the `/exec` URL (preferred):** open the planner once with `?script=<exec url>` — the
+  seed handler (index.html, near the `?drive=`/`?plan=` block) validates a
+  `https://script.google.com/.../exec` URL, saves it to localStorage, and scrubs it from the
+  address bar. So Sarah just taps one link instead of pasting the long URL into a phone prompt.
+  The manual `prompt()` in `copySlidesToDrive()` remains as a fallback.
 - Server side: `apps-script/copy-slides.gs` (in this repo; also lives at `~/aanp-capture/`) —
   `doGet(e)` reads `e.parameter.codes` and runs `copySlides(codes)`, which fetches
   `https://files.aanpdownload.org/2026/Natl/doc/{code}.pdf` per session, skips the ~57794-byte
@@ -58,7 +69,8 @@ Goal: one tap copies the real slide-deck PDFs for chosen sessions into Sarah's D
 - [x] Deployed `apps-script/copy-slides.gs` under Sarah's account; verified the `?codes=` path
       copies exactly the passed sessions (17 decks copied; dedup confirmed). The `/exec` URL is
       stored privately in the app (local storage) — intentionally NOT committed to this public repo.
-- [ ] On Sarah's device: paste the `/exec` URL once via My Notes → 📥 Copy slide PDFs to Drive.
+- [x] `/exec` URL delivery solved via `?script=` seed link (no manual paste). Send Sarah the one-tap
+      link (see banner at top); opening it once stores the URL on her device.
 - [ ] After AANP assigns/updates rooms, re-capture and rebuild (`build_data.py` merges `rooms.json`).
 
 ## Reverse-engineering notes (rooms, picks, slides)
