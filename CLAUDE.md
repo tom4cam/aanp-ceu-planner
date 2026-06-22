@@ -37,6 +37,12 @@ state in the browser's localStorage.
 ## Key behaviors
 - Per-session status: Live / Watch Later / Skip. CEU dashboard sums prior + live + recordings + manual toward 75.
 - **My Map**: live picks drawn on real floorplans with walk-distance warnings (foot-injury aid).
+- **Home base (Palazzo Tower)**: `HOME` const + `homeDistanceTo()`/`homeTransitionHTML()` in index.html.
+  Each day's first live session gets a "Start of day · from your Palazzo suite" walk line, and the
+  Level 2 day map shows a purple **P** pin (the Expo entrance off the Palazzo walkway, with a dashed
+  line to the first room there). Anchored at `{lvl:2, x:0.90, y:0.60}` — **approximate**; the exact
+  guest-room position isn't in the AANP bundle, so adjust `HOME` once the room is assigned. Toggle:
+  "Start each day from my Palazzo Tower suite" checkbox in My Map (`state.homeBase`, default on).
 - **My Notes**: sessions where you checked **⭐ Save slides to My Notes** or typed a note.
 - Private seeds via query string (kept only in local storage, never in source):
   `?plan=sarah` loads her picks · `?drive=<folder link or id>` seeds the Drive folder.

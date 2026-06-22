@@ -347,6 +347,29 @@ function roomDistance(a, b){
   if(ga && gb){ const dx=ga.x-gb.x, dy=ga.y-gb.y; const d=Math.sqrt(dx*dx+dy*dy); return {d, far:d>0.34, sameLevel:true, levels:[la,lb]}; }
   return null; // unknown geometry
 }
+/* Home base: Sarah's Palazzo Tower suite. Walks "from the suite" start at the
+   convention entrance off the Palazzo walkway — anchored at the Level 2 Expo
+   lobby (approximate; the front-desk room assignment sets the exact tower spot). */
+const HOME = {name:'Palazzo Tower suite', lvl:2, x:0.90, y:0.60};
+function homeEnabled(){ return state.homeBase!==false; }
+function homeDistanceTo(roomStr){
+  const g=geoOf(roomStr); const lb=g?g.lvl:levelOf(roomStr);
+  if(lb==null) return null;
+  if(lb!==HOME.lvl) return {d:1.0+0.6*Math.abs(HOME.lvl-lb), far:true, sameLevel:false, levels:[HOME.lvl,lb]};
+  if(g){ const dx=HOME.x-g.x, dy=HOME.y-g.y; const d=Math.sqrt(dx*dx+dy*dy); return {d, far:d>0.34, sameLevel:true, levels:[HOME.lvl,lb]}; }
+  return null;
+}
+function homeTransitionHTML(s){
+  if(!homeEnabled()) return '';
+  const r=roomOf(s); const dist=homeDistanceTo(r); if(!dist) return '';
+  const why = !dist.sameLevel
+    ? `down to the Expo level, then up to L${dist.levels[1]} (elevator)`
+    : 'on the Expo level (same floor as the entrance)';
+  const cls = dist.far ? 'transition far' : 'transition';
+  const ico = dist.far ? '🦶' : '🏨';
+  return `<div class="${cls}">${ico} <b>Start of day · from your Palazzo suite</b> — ${why}.`+
+    `<div class="trrooms">🏨 Palazzo Tower → ${escapeHtml(r||'?')}</div></div>`;
+}
 const SESS = (window.SESSIONS||[]).slice();
 const byId = {}; SESS.forEach(s=>byId[s.id]=s);
 const DAYS = [...new Set(SESS.map(s=>s.day))]
@@ -372,7 +395,7 @@ function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, driveFolder:'', driveScriptUrl:'', _seedM_:false, _preloaded:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, driveFolder:'', driveScriptUrl:'', homeBase:true, _seedM_:false, _preloaded:false};
 let state = load();
 function load(){
   try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
@@ -584,7 +607,8 @@ function renderLive(){
     .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
   if(!live.length){ el.innerHTML=`<div class="empty"><b>No live sessions yet</b>Tap “Live” on a session in Browse to build your daily schedule.</div>`; return; }
   const conf=liveConflicts();
-  let html=`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Walks between back-to-back rooms are scored from the real venue map — <b>far walks</b> (different floor or long distance) come with closer suggestions. 🦶</div>`;
+  let html=`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Walks between back-to-back rooms are scored from the real venue map — <b>far walks</b> (different floor or long distance) come with closer suggestions. 🦶`+
+    `<label style="display:block;margin-top:6px;font-weight:600"><input type="checkbox" id="homeToggle"${homeEnabled()?' checked':''}> Start each day from my Palazzo Tower suite 🏨</label></div>`;
   let curDay=null, prev=null, dayNum=0;
   for(const s of live){
     if(s.day!==curDay){
@@ -594,6 +618,7 @@ function renderLive(){
     }
     dayNum++;
     if(prev && prev.endMin!=null && s.startMin!=null) html+=transitionHTML(prev,s);
+    else if(!prev) html+=homeTransitionHTML(s);
     const isConf=conf.has(s.id);
     html+=`<div class="slot ${isConf?'conflict':''}">`+cardLiveHTML(s,isConf,dayNum)+`</div>`;
     prev=s;
@@ -607,6 +632,7 @@ function renderLive(){
     setPick(b.dataset.from,'rec'); state.picks[b.dataset.swap]='live'; save(); renderRibbon(); renderActive();
     toast('Swapped to the closer session (old one → Watch Later)');
   });
+  const ht=document.getElementById('homeToggle'); if(ht) ht.onchange=()=>{ state.homeBase=ht.checked; save(); renderLive(); };
   el.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
 }
 function openMapModal(lvlmapEl){
@@ -719,6 +745,15 @@ function dayMapHTML(daySessions){
     const lp=pts.filter(p=>p.g.lvl===lv).sort((a,b)=>a.n-b.n);
     const img=LVL_IMG[lv];
     const bg=img?`<image href="${img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>`:'';
+    // home-base pin: the Palazzo entrance, drawn on the Expo level with a line to the first room there
+    let homeMark='', homeKey='';
+    if(lv===HOME.lvl && homeEnabled() && lp.length){
+      const hx=HOME.x*100, hy=HOME.y*100, f=lp[0].g;
+      homeMark=`<line x1="${hx.toFixed(1)}" y1="${hy.toFixed(1)}" x2="${(f.x*100).toFixed(1)}" y2="${(f.y*100).toFixed(1)}" stroke="#7a5cff" stroke-width="1.1" stroke-dasharray="2 2"/>`+
+        `<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="4.6" fill="#7a5cff" stroke="#fff" stroke-width="1.1"/>`+
+        `<text x="${hx.toFixed(1)}" y="${(hy+1.6).toFixed(1)}" font-size="4.2" fill="#fff" text-anchor="middle" font-weight="700">P</text>`;
+      homeKey=` · <b style="color:#7a5cff">P</b>. from your Palazzo suite (approx.)`;
+    }
     let line='';
     for(let i=0;i<lp.length-1;i++){const a=lp[i].g,b=lp[i+1].g;
       if(a.x===b.x&&a.y===b.y) continue;
@@ -732,10 +767,10 @@ function dayMapHTML(daySessions){
         ? `<rect x="${(cx-w/2).toFixed(1)}" y="${(cy-r).toFixed(1)}" width="${w.toFixed(1)}" height="${(r*2).toFixed(1)}" rx="${r.toFixed(1)}" fill="var(--brand)" stroke="#fff" stroke-width="1.1"/>`
         : `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r}" fill="var(--brand)" stroke="#fff" stroke-width="1.1"/>`;
       return shape+`<text x="${cx.toFixed(1)}" y="${(cy+1.6).toFixed(1)}" font-size="4.6" fill="#fff" text-anchor="middle" font-weight="700">${label}</text>`;}).join('');
-    return `<div class="lvlmap"><div class="lvlmap-h">Level ${lv}</div><svg viewBox="0 0 100 100" width="100%">${bg}${line}${dots}</svg>`+
-      `<div class="lvlmap-key">${lp.map(p=>`${p.n}. ${escapeHtml(p.room.replace(/^Level \d+,\s*/,''))}`).join(' · ')}</div></div>`;
+    return `<div class="lvlmap"><div class="lvlmap-h">Level ${lv}</div><svg viewBox="0 0 100 100" width="100%">${bg}${homeMark}${line}${dots}</svg>`+
+      `<div class="lvlmap-key">${lp.map(p=>`${p.n}. ${escapeHtml(p.room.replace(/^Level \d+,\s*/,''))}`).join(' · ')}${homeKey}</div></div>`;
   }).join('');
-  return `<div class="daymap no-print">${boxes}<div class="daymap-note">Numbered pins = your sessions, in order, on the real venue floor plan. Orange line = the walk on that floor; pins on different floors mean an elevator trip — plan extra time. 🦶</div></div>`;
+  return `<div class="daymap no-print">${boxes}<div class="daymap-note">Numbered pins = your sessions, in order, on the real venue floor plan. Orange line = the walk on that floor; pins on different floors mean an elevator trip — plan extra time. The purple <b>P</b> pin marks the walk in from your Palazzo Tower suite (approximate — the Expo entrance). 🦶</div></div>`;
 }
 function cardLiveHTML(s,isConf,num){
   return `<div class="scard is-live" data-id="${s.id}">
