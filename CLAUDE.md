@@ -48,9 +48,12 @@ state in the browser's localStorage.
     (`state.homeLoc`, overrides `HOME_DEF`; drops the "(approx.)" tag once set).
   - Toggle — "Start each day from my Palazzo Tower suite" checkbox (`state.homeBase`, default on).
 - **My Notes**: sessions where you checked **⭐ Save slides to My Notes** or typed a note.
-- Private seeds via query string (kept only in local storage, never in source):
-  `?plan=sarah` loads her picks · `?drive=<folder link or id>` seeds the Drive folder.
-  The auto-updater preserves the query string across version bumps.
+- Private seeds via query string (kept only in local storage, never in source; each scrubs itself
+  from the address bar via `history.replaceState`):
+  `?plan=sarah` loads her picks · `?drive=<folder link or id>` seeds the Drive folder ·
+  `?script=<exec url>` seeds the slide-copy `/exec` URL · `?home=<room text>` sets the Palazzo room
+  label · `?homexy=<lvl>,<x>,<y>` fine-tunes the home pin. Combine in one link to fix several at once
+  (e.g. the drive+script repair link). The auto-updater preserves the query string across version bumps.
 
 ## My Notes → Google Drive (slide PDFs)
 Goal: one tap copies the real slide-deck PDFs for chosen sessions into Sarah's Drive folder.
@@ -61,6 +64,10 @@ Goal: one tap copies the real slide-deck PDFs for chosen sessions into Sarah's D
   `https://script.google.com/.../exec` URL, saves it to localStorage, and scrubs it from the
   address bar. So Sarah just taps one link instead of pasting the long URL into a phone prompt.
   The manual `prompt()` in `copySlidesToDrive()` remains as a fallback.
+- **Field guard (don't cross-paste):** the Drive-folder prompt (`bindNotes()` → `driveOpen`) rejects a
+  `script.google.com`/`/exec` value **and self-heals** one already saved there (clears it + re-prompts on
+  next tap); the slide-copy prompt rejects a `drive.google.com`/`docs.google.com` link or any non-`/exec`
+  URL. Each toast points to the correct button. (Added after a real cross-paste mishap.)
 - Server side: `apps-script/copy-slides.gs` (in this repo; also lives at `~/aanp-capture/`) —
   `doGet(e)` reads `e.parameter.codes` and runs `copySlides(codes)`, which fetches
   `https://files.aanpdownload.org/2026/Natl/doc/{code}.pdf` per session, skips the ~57794-byte
