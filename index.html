@@ -7,7 +7,7 @@
 <title>AANP 2026 CEU Planner</title>
 <script>
 /* Auto-update: if a newer build is live, reload once (cache-busted). Guarded against loops. */
-window.APP_VERSION = '2026-06-21.14';
+window.APP_VERSION = '2026-06-23.1';
 (function(){
   try{
     fetch('version.txt?_='+Date.now(),{cache:'no-store'})
@@ -282,7 +282,6 @@ main{padding:12px var(--gut) 80px}
       <h1>AANP 2026 CEU Planner</h1>
       <div class="sub">2026 National Conference · Venetian Expo, Las Vegas · Jun 23–27</div>
     </div>
-    <button class="hbtn" id="printBtn">🖨️ Plan</button>
   </div>
 </header>
 <div class="stickybar">
@@ -1273,7 +1272,7 @@ function renderHelp(){
 
    <div class="panel">
      <h2>5 · Print your plan</h2>
-     <div class="hp">The <b>My Plan</b> tab (or 🖨️ button up top) shows a clean, one-look summary of only what you're attending and watching, with CEU totals and room numbers — ready to print or save as a PDF to carry at the conference.</div>
+     <div class="hp">The <b>My Plan</b> tab shows a clean, one-look summary of only what you're attending and watching, with CEU totals and room numbers. Use the <b>🖨️ Print / Save as PDF</b> button there to print it or save a PDF to carry at the conference.</div>
    </div>
 
    <div class="panel">
@@ -1312,7 +1311,6 @@ function show(tab){
   window.scrollTo(0,0);
 }
 document.getElementById('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) show(b.dataset.tab); });
-document.getElementById('printBtn').onclick=()=>{ show('plan'); setTimeout(()=>window.print(),250); };
 
 /* ---------- escaping ---------- */
 function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
