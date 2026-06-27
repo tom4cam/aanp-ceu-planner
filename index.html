@@ -734,7 +734,7 @@ function openSessionModal(id){
     <label class="sd-check"><input type="checkbox" data-sf="saveSlides" ${saved.saveSlides?'checked':''}> ⭐ Save slides to My Notes</label>
     ${+s.ce>0?`<div class="sd-h">Earn this CEU</div>
     <a class="sd-openlink" href="${EVAL_URL}" target="_blank" rel="noopener">📋 Complete evaluation ↗</a>
-    <label class="sd-check"><input type="checkbox" data-survey="1" ${surveyDone(id)?'checked':''}> ✅ Survey completed</label>`:''}
+    <label class="sd-check"><input type="checkbox" data-survey="${escapeAttr(id)}" ${surveyDone(id)?'checked':''}> ✅ Survey completed</label>`:''}
     <div class="sd-field" style="margin-top:12px"><label>My notes</label><textarea data-sf="notes" placeholder="Type your notes for this session…">${escapeHtml(saved.notes||'')}</textarea></div>
     <button class="sd-done sd-done-bottom" id="sdDoneBottom">Done ✕</button>
   `;
