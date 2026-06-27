@@ -214,6 +214,10 @@ main{padding:12px var(--gut) 80px}
 .card-act{margin-top:8px}
 .towl{background:#fff;border:1px solid var(--rec);color:var(--rec);border-radius:7px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer}
 .towl:active{background:var(--rec);color:#fff}
+.daychips{display:flex;flex-wrap:wrap;gap:6px;padding:8px var(--gut) 6px}
+.daychip{border:1px solid #cdd3dd;background:#fff;border-radius:16px;padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--brand-dk);cursor:pointer}
+.daychip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pnum{color:#5a6472;font-weight:600}
 .sd-saved{font-size:12px;color:var(--live);font-weight:600;margin-left:6px}
 .moreinfo{color:var(--rec);font-weight:700}
 .nt-row{font-size:13.5px;color:var(--ink);margin-top:4px}
@@ -345,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.6"></script>
-<script src="details.js?v=2026-06-27.6"></script>
-<script src="places-engine.js?v=2026-06-27.6"></script>
-<script src="places.js?v=2026-06-27.6"></script>
-<script src="evalmap.js?v=2026-06-27.6"></script>
+<script src="data.js?v=2026-06-27.7"></script>
+<script src="details.js?v=2026-06-27.7"></script>
+<script src="places-engine.js?v=2026-06-27.7"></script>
+<script src="places.js?v=2026-06-27.7"></script>
+<script src="evalmap.js?v=2026-06-27.7"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -533,6 +537,14 @@ function bindTWL(){
   });
 }
 function truncate(s,n){ return s.length>n? s.slice(0,n-1)+'…':s; }
+/* Day chips for My Plan / My Map — default to the current conference day (else All). */
+function confDays(){ const seen={},out=[]; SESS.forEach(s=>{ if(s.day && !(s.day in seen)){ seen[s.day]=1; out.push({day:s.day,date:s.date,order:s.dayOrder}); } }); return out.sort((a,b)=>a.order-b.order); }
+function currentConfDate(){ const d=new Date(); const md=(d.getMonth()+1)+'/'+d.getDate(); return confDays().some(c=>c.date===md)?md:null; }
+let dayView = currentConfDate() || 'all';
+function dayMatch(s){ return dayView==='all' || s.date===dayView; }
+function dayChipsHTML(){ const chip=(v,l)=>`<button class="daychip${dayView===v?' on':''}" data-day="${escapeAttr(v)}">${l}</button>`;
+  return `<div class="daychips no-print">${chip('all','All')}${confDays().map(c=>chip(c.date, c.day.slice(0,3)+' '+c.date)).join('')}</div>`; }
+function bindDayChips(){ document.querySelectorAll('.daychip').forEach(b=>b.onclick=()=>{ dayView=b.dataset.day; renderActive(); window.scrollTo(0,0); }); }
 
 /* ---------- ribbon ---------- */
 function renderRibbon(){
@@ -665,11 +677,14 @@ function bindCards(host){
 /* ====================================================================== */
 function renderLive(){
   const el=document.getElementById('view-live');
-  const live = SESS.filter(s=>pickOf(s.id)==='live')
+  const allLive = SESS.filter(s=>pickOf(s.id)==='live')
     .sort((a,b)=> a.dayOrder-b.dayOrder || (a.startMin??1e9)-(b.startMin??1e9));
-  if(!live.length){ el.innerHTML=`<div class="empty"><b>No live sessions yet</b>Tap “Live” on a session in Browse to build your daily schedule.</div>`; return; }
+  const chips=dayChipsHTML();
+  if(!allLive.length){ el.innerHTML=chips+`<div class="empty"><b>No live sessions yet</b>Tap “Live” on a session in Browse to build your daily schedule.</div>`; bindDayChips(); return; }
+  const live = allLive.filter(dayMatch);
+  if(!live.length){ el.innerHTML=chips+`<div class="empty"><b>Nothing live on this day</b>Pick another day above, or “All”.</div>`; bindDayChips(); return; }
   const conf=liveConflicts();
-  let html=`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Walks between back-to-back rooms are scored from the real venue map — <b>far walks</b> (different floor or long distance) come with closer suggestions. 🦶`+
+  let html=chips+`<div class="note no-print" style="margin:2px 4px 12px">One live session per time block. Overlaps are flagged in red. Walks between back-to-back rooms are scored from the real venue map — <b>far walks</b> (different floor or long distance) come with closer suggestions. 🦶`+
     `<label style="display:block;margin-top:6px;font-weight:600"><input type="checkbox" id="homeToggle"${homeEnabled()?' checked':''}> Start each day from my Palazzo Tower suite 🏨</label>`+
     `<input type="text" id="homeLabel" placeholder="Palazzo room # (add when assigned)" value="${escapeAttr(state.homeLabel||'')}" style="margin-top:5px;width:100%;max-width:260px;padding:5px 8px;border:1px solid var(--line);border-radius:7px;font-size:13px"></div>`;
   let curDay=null, prev=null, dayNum=0;
@@ -698,6 +713,7 @@ function renderLive(){
   const ht=document.getElementById('homeToggle'); if(ht) ht.onchange=()=>{ state.homeBase=ht.checked; save(); renderLive(); };
   const hl=document.getElementById('homeLabel'); if(hl){ hl.onchange=()=>{ state.homeLabel=hl.value.trim(); save(); renderLive(); }; hl.onblur=hl.onchange; }
   el.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
+  bindDayChips();
 }
 function openMapModal(lvlmapEl){
   const card=document.getElementById('mmCard'), modal=document.getElementById('mapModal');
@@ -922,10 +938,11 @@ function foodNow(){
   const d=new Date();
   return {day:d.getDay(), minutes:d.getHours()*60+d.getMinutes()};
 }
-const FOOD_CATS=[['coffee','☕ Coffee'],['food','🍔 Food'],['sitdown','🍽️ Sit-down'],['essentials','🧴 Essentials'],['restroom','🚻 Restrooms'],['shop','🛍️ Shops']];
+const FOOD_CATS=[['restroom','🚻 Restrooms'],['coffee','☕ Coffee'],['food','🍔 Food'],['sitdown','🍽️ Sit-down'],['essentials','🧴 Essentials'],['shop','🛍️ Shops']];
 function renderFood(){
   const body=document.getElementById('foodBody'); if(!body) return;
-  const f=state.foodFilters||(state.foodFilters={cats:[],openNow:false,stepFree:false,q:''});
+  const f=state.foodFilters||(state.foodFilters={cats:['restroom'],openNow:false,stepFree:false,q:''});
+  if(f._d!==1){ f.cats=['restroom']; f._d=1; save(); }  // one-time: default the filter to Restrooms
   const origin=foodOrigin(), now=foodNow();
   const filtered=PlacesEngine.filterPlaces(window.PLACES||[], {q:f.q,cats:f.cats,openNow:f.openNow,stepFree:f.stepFree,now});
   const sorted=PlacesEngine.sortByWalk(filtered, origin);
@@ -1252,11 +1269,12 @@ function loadPreset(){
 function renderPlan(){
   const el=document.getElementById('view-plan');
   const t=totals();
-  const live = SESS.filter(s=>pickOf(s.id)==='live').sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
-  const recs = SESS.filter(s=>pickOf(s.id)==='rec').sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
+  const live = SESS.filter(s=>pickOf(s.id)==='live' && dayMatch(s)).sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
+  const recs = SESS.filter(s=>pickOf(s.id)==='rec' && dayMatch(s)).sort((a,b)=>a.dayOrder-b.dayOrder||(a.startMin??1e9)-(b.startMin??1e9));
   const conf=liveConflicts();
 
   let html=`
+   ${dayChipsHTML()}
    <div class="printhead">
      <h1 style="margin:0 0 2px;font-size:20px">AANP 2026 Conference Plan</h1>
      <div style="color:#555;font-size:12px">AGACNP renewal · Target ${TARGET} CEUs · ${VENUE.name}, ${VENUE.city} · Jun 23–27, 2026</div>
@@ -1275,8 +1293,10 @@ function renderPlan(){
    </div>`;
 
   if(!live.length && !recs.length){
-    html+=`<div class="empty"><b>Nothing planned yet</b>Mark some sessions Live or Record, then come back to print your plan.</div>`;
-    el.innerHTML=html; bindPlanTools(); return;
+    html+= dayView==='all'
+      ? `<div class="empty"><b>Nothing planned yet</b>Mark some sessions Live or Record, then come back to print your plan.</div>`
+      : `<div class="empty"><b>Nothing planned on this day</b>Pick another day above, or “All”.</div>`;
+    el.innerHTML=html; bindPlanTools(); bindDayChips(); return;
   }
 
   if(live.length){
@@ -1308,14 +1328,14 @@ function renderPlan(){
       </div>`;
     }
   }
-  if(state.manual.filter(m=>m.label||m.ceu).length){
+  if(dayView==='all' && state.manual.filter(m=>m.label||m.ceu).length){
     html+=`<div class="day-head" style="margin-top:14px">＋ Other CEUs · ${fmtCE(t.manual)} CE</div>`;
     for(const m of state.manual){ if(!(m.label||m.ceu)) continue;
       html+=`<div class="scard" style="margin-bottom:6px"><h3 style="font-size:14.5px">${escapeHtml(m.label||'(untitled)')}</h3><div class="meta" style="margin-bottom:0"><span class="tag ce">${fmtCE(parseFloat(m.ceu)||0)} CE</span></div></div>`;
     }
   }
   el.innerHTML=html;
-  bindPlanTools();
+  bindPlanTools(); bindDayChips();
 }
 function bindPlanTools(){
   const p=document.getElementById('printNow'); if(p)p.onclick=()=>window.print();
