@@ -349,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.8"></script>
-<script src="details.js?v=2026-06-27.8"></script>
-<script src="places-engine.js?v=2026-06-27.8"></script>
-<script src="places.js?v=2026-06-27.8"></script>
-<script src="evalmap.js?v=2026-06-27.8"></script>
+<script src="data.js?v=2026-06-27.9"></script>
+<script src="details.js?v=2026-06-27.9"></script>
+<script src="places-engine.js?v=2026-06-27.9"></script>
+<script src="places.js?v=2026-06-27.9"></script>
+<script src="evalmap.js?v=2026-06-27.9"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -1365,8 +1365,9 @@ function noteData(s){
 }
 function renderNotes(){
   const el=document.getElementById('view-notes');
-  const list=notesSessions();
-  let html=`
+  const all=notesSessions();          // all CEU picks (Copy buttons act on the full set)
+  const list=all.filter(dayMatch);    // the day chips filter only what's shown
+  let html=dayChipsHTML()+`
    <div class="panel no-print">
      <h2>📝 My Notes</h2>
      <div class="note">Every CEU session you've picked (Live + Watch Later) is here — tap one to add notes, presenter, or a slide link.</div>
@@ -1376,7 +1377,10 @@ function renderNotes(){
        <button id="copySlides">📥 Copy slide PDFs to Drive</button>
      </div>
    </div>`;
-  if(!list.length){ html+=`<div class="empty"><b>No CEU sessions selected yet</b>Mark sessions <b>Live</b> or <b>Watch Later</b> in Browse — every CE-earning pick shows up here for notes.</div>`; el.innerHTML=html; bindNotes(); return; }
+  if(!list.length){ html+= all.length
+      ? `<div class="empty"><b>Nothing on this day</b>Pick another day above, or “All”.</div>`
+      : `<div class="empty"><b>No CEU sessions selected yet</b>Mark sessions <b>Live</b> or <b>Watch Later</b> in Browse — every CE-earning pick shows up here for notes.</div>`;
+    el.innerHTML=html; bindNotes(); bindDayChips(); return; }
   let curDay=null;
   for(const s of list){
     if(s.day!==curDay){ curDay=s.day; html+=`<div class="day-head">${s.day} <span class="pill">${s.date}</span></div>`; }
@@ -1390,7 +1394,7 @@ function renderNotes(){
       ${pickOf(s.id)==='live'?`<div class="card-act no-print"><button class="towl" data-towl="${s.id}">↪ Move to Watch Later</button></div>`:''}
     </div>`;
   }
-  el.innerHTML=html; bindNotes();
+  el.innerHTML=html; bindNotes(); bindDayChips();
 }
 function bindNotes(){
   const dopen=document.getElementById('driveOpen'); if(dopen) dopen.onclick=()=>{
