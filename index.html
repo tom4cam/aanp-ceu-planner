@@ -349,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.10"></script>
-<script src="details.js?v=2026-06-27.10"></script>
-<script src="places-engine.js?v=2026-06-27.10"></script>
-<script src="places.js?v=2026-06-27.10"></script>
-<script src="evalmap.js?v=2026-06-27.10"></script>
+<script src="data.js?v=2026-06-27.11"></script>
+<script src="details.js?v=2026-06-27.11"></script>
+<script src="places-engine.js?v=2026-06-27.11"></script>
+<script src="places.js?v=2026-06-27.11"></script>
+<script src="evalmap.js?v=2026-06-27.11"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -430,7 +430,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.10';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.11';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -714,7 +714,7 @@ function renderLive(){
   });
   const ht=document.getElementById('homeToggle'); if(ht) ht.onchange=()=>{ state.homeBase=ht.checked; save(); renderLive(); };
   const hl=document.getElementById('homeLabel'); if(hl){ hl.onchange=()=>{ state.homeLabel=hl.value.trim(); save(); renderLive(); }; hl.onblur=hl.onchange; }
-  el.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
+  bindFullMaps(el);
   bindDayChips();
 }
 function openMapModal(lvlmapEl){
@@ -903,13 +903,45 @@ function openPlaceMap(id){
 }
 /* The full hi-res property maps (every restaurant & shop is numbered) — shown at the
    bottom of My Map and Food & Shops, tappable to fullscreen pinch-zoom. */
+/* ---- GPS "you are here" blue dot (rough — indoor GPS is unreliable) ---- */
+let geoPos=null, geoAsked=false;
+// Approximate georeference of the Venetian/Palazzo property footprint on the prop maps.
+const GEO={latTop:36.1238,latBot:36.1184,lonL:-115.1719,lonR:-115.1666,x0:0.34,x1:0.92,y0:0.17,y1:0.83};
+function geoToMap(){
+  if(!geoPos) return null;
+  const {lat,lon}=geoPos;
+  if(lat>GEO.latTop+0.001||lat<GEO.latBot-0.001||lon<GEO.lonL-0.0012||lon>GEO.lonR+0.0012) return null;
+  const nx=GEO.x0+(lon-GEO.lonL)/(GEO.lonR-GEO.lonL)*(GEO.x1-GEO.x0);
+  const ny=GEO.y0+(GEO.latTop-lat)/(GEO.latTop-GEO.latBot)*(GEO.y1-GEO.y0);
+  return {x:Math.max(0,Math.min(1,nx)),y:Math.max(0,Math.min(1,ny))};
+}
+function requestLocation(silent){
+  if(!navigator.geolocation){ if(!silent) toast('Location not supported on this device'); return; }
+  navigator.geolocation.getCurrentPosition(
+    p=>{ geoPos={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy};
+      const here=geoToMap();
+      if(activeTab==='live') renderLive(); else if(activeTab==='food') renderFood();
+      if(!here && !silent) toast("You're not at the Venetian right now — location dot hidden");
+    },
+    e=>{ if(!silent) toast("Couldn't get your location"); },
+    {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+}
+function autoGeo(){ if(!geoAsked){ geoAsked=true; requestLocation(true); } }
+function bindFullMaps(scope){
+  scope.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
+  const mlb=scope.querySelector('#myLocBtn'); if(mlb) mlb.onclick=()=>requestLocation(false);
+  autoGeo();
+}
 function fullMapsHTML(){
+  const g=geoToMap();
+  const dot=g?`<circle cx="${(g.x*100).toFixed(1)}" cy="${(g.y*100).toFixed(1)}" r="4.6" fill="#1a73e8" opacity="0.25"/><circle cx="${(g.x*100).toFixed(1)}" cy="${(g.y*100).toFixed(1)}" r="2.3" fill="#1a73e8" stroke="#fff" stroke-width="0.9"/>`:'';
   const maps=[['prop1','Venetian / Palazzo — Level 1'],['prop2','Grand Canal Shoppes — Level 2']];
   return `<div class="day-head" style="margin-top:18px">🗺️ Full venue map</div>`+
-    `<div class="note no-print" style="margin:0 4px 8px">Tap to zoom. Every restaurant & shop is numbered — find a place's <b>#</b> in the list, then spot it here.</div>`+
+    `<div class="note no-print" style="margin:0 4px 8px">Tap to zoom. Every restaurant & shop is numbered — find a place's <b>#</b> in the list, then spot it here.${g?' · <b style="color:#1a73e8">● blue dot = you</b> (rough indoors)':''}</div>`+
+    `<button class="towl no-print" id="myLocBtn" style="margin:0 4px 10px">📍 Show my location</button>`+
     maps.map(([id,label])=>{ const m=PlacesEngine.MAP_META[id];
       return `<div class="lvlmap"><div class="lvlmap-h">${escapeHtml(label)} ⤢</div>`+
-        `<svg viewBox="0 0 100 100" width="100%"><image href="${m.img}?v=${APP_VER}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/></svg></div>`;
+        `<svg viewBox="0 0 100 100" width="100%"><image href="${m.img}?v=${APP_VER}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>${dot}</svg></div>`;
     }).join('');
 }
 function cardLiveHTML(s,isConf,num){
@@ -1000,7 +1032,7 @@ function bindFood(){
     save(); renderFood();
   });
   document.querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
-  document.querySelectorAll('#view-food .lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
+  bindFullMaps(document.getElementById('view-food'));
 }
 
 /* ====================================================================== */
