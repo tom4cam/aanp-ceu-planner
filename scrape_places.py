@@ -28,23 +28,27 @@ class _Cards(HTMLParser):
         self.rows = []
         self._in_card = False
         self._cat = ''
-        self._capture = None  # 'name' | 'cat' | None
+        self._capture = None       # 'name' | 'cat' | None
+        self._capture_tag = None   # the tag that opened the current capture
         self._name = ''
         self._catt = ''
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
-        cls = a.get('class', '')
+        cls = a.get('class', '').split()   # token match, not substring (avoids "flashcard")
         if 'card' in cls:
             self._in_card = True; self._cat = a.get('data-category', ''); self._name=''; self._catt=''
         elif self._in_card and 'name' in cls:
-            self._capture = 'name'
+            self._capture = 'name'; self._capture_tag = tag
         elif self._in_card and 'cat' in cls:
-            self._capture = 'cat'
+            self._capture = 'cat'; self._capture_tag = tag
     def handle_data(self, data):
         if self._capture == 'name': self._name += data
         elif self._capture == 'cat': self._catt += data
     def handle_endtag(self, tag):
-        if self._capture: self._capture = None
+        # Only end the capture when ITS element closes, so nested inline markup
+        # (e.g. <a class="name"><strong>X</strong> Y</a>) keeps the full text.
+        if self._capture and tag == self._capture_tag:
+            self._capture = None; self._capture_tag = None
         if self._in_card and tag == 'li':
             name = self._name.strip()
             if name:
