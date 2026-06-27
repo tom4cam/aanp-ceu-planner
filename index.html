@@ -342,10 +342,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.3"></script>
-<script src="details.js?v=2026-06-27.3"></script>
-<script src="places-engine.js?v=2026-06-27.3"></script>
-<script src="places.js?v=2026-06-27.3"></script>
+<script src="data.js?v=2026-06-27.4"></script>
+<script src="details.js?v=2026-06-27.4"></script>
+<script src="places-engine.js?v=2026-06-27.4"></script>
+<script src="places.js?v=2026-06-27.4"></script>
+<script src="evalmap.js?v=2026-06-27.4"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -431,6 +432,18 @@ const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[],
 /* CEU evaluation portal (from the AANP app's "Complete your Evaluation" link). Sarah signs in
    with her own AANP credentials there; we only open it. Per-session completion is tracked locally. */
 const EVAL_URL = 'https://authis4.aanp.org/Legacy/Login?returnUrl=https%3A%2F%2Feval.aanp.org/conference%2F206';
+const EVAL_CONF = 206; // AANP eval-system conference id (from eval.aanp.org/api/conference)
+/* Per-session evaluation deep link: the eval SPA route is
+   /conference/:confId/session/:presentationId (-> EvaluationPageController). We map our
+   session code -> PresentationId via evalmap.js (window.EVAL_PID), wrap it in the AANP login
+   so she lands on that session's eval after signing in. Falls back to the whole-conference
+   portal (EVAL_URL) for any session without a mapped id. */
+function evalUrl(id){
+  const pid = (window.EVAL_PID||{})[id];
+  if(!pid) return EVAL_URL;
+  const target = 'https://eval.aanp.org/conference/'+EVAL_CONF+'/session/'+pid;
+  return 'https://authis4.aanp.org/Legacy/Login?returnUrl='+encodeURIComponent(target);
+}
 function surveyDone(id){ return !!(state.surveys && state.surveys[id]); }
 function setSurvey(id,on){ if(!state.surveys) state.surveys={}; if(on) state.surveys[id]=true; else delete state.surveys[id]; save(); }
 function ceEarningPicks(){ return SESS.filter(s=>{const p=pickOf(s.id); return (p==='live'||p==='rec') && +s.ce>0;})
@@ -733,7 +746,7 @@ function openSessionModal(id){
     ${openUrl?`<a class="sd-openlink" href="${escapeAttr(openUrl)}" target="_blank" rel="noopener">📄 Open handouts / slides</a>`:''}
     <label class="sd-check"><input type="checkbox" data-sf="saveSlides" ${saved.saveSlides?'checked':''}> ⭐ Save slides to My Notes</label>
     ${+s.ce>0?`<div class="sd-h">Earn this CEU</div>
-    <a class="sd-openlink" href="${EVAL_URL}" target="_blank" rel="noopener">📋 Complete evaluation ↗</a>
+    <a class="sd-openlink" href="${evalUrl(id)}" target="_blank" rel="noopener">📋 Complete evaluation ↗</a>
     <label class="sd-check"><input type="checkbox" data-survey="${escapeAttr(id)}" ${surveyDone(id)?'checked':''}> ✅ Survey completed</label>`:''}
     <div class="sd-field" style="margin-top:12px"><label>My notes</label><textarea data-sf="notes" placeholder="Type your notes for this session…">${escapeHtml(saved.notes||'')}</textarea></div>
     <button class="sd-done sd-done-bottom" id="sdDoneBottom">Done ✕</button>
@@ -1025,7 +1038,7 @@ function renderDash(){
   const svRows=ceList.map(s=>`<div class="surveyrow${surveyDone(s.id)?' done':''}">
       <input type="checkbox" class="srchk" data-survey="${escapeAttr(s.id)}" ${surveyDone(s.id)?'checked':''}>
       <div class="sr-main"><b>${escapeHtml(s.code)}</b> ${escapeHtml(s.title)}<div class="sr-sub">${escapeHtml(s.day)} · ${fmtCE(s.ce)} CE · ${pickOf(s.id)==='live'?'🟢 Live':'🔵 Watch later'}</div></div>
-      <a class="sr-eval" href="${EVAL_URL}" target="_blank" rel="noopener">Evaluate ↗</a>
+      <a class="sr-eval" href="${evalUrl(s.id)}" target="_blank" rel="noopener">Evaluate ↗</a>
     </div>`).join('');
   el.innerHTML=`
    <div class="bigprogress">
