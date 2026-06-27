@@ -60,9 +60,9 @@
       const tl = MAP_META[result.to] ? MAP_META[result.to].label : '';
       where = `${fl} → ${tl} (elevator)`;
     } else {
-      const fl = MAP_META[result.from] ? MAP_META[result.from].label : ZONE_LABEL[zoneOf(result.from)] || '';
-      const tl = MAP_META[result.to] ? MAP_META[result.to].label : ZONE_LABEL[zoneOf(result.to)] || '';
-      where = `${fl} → ${tl}`;
+      const fz = ZONE_LABEL[zoneOf(result.from)] || '';
+      const tz = ZONE_LABEL[zoneOf(result.to)] || '';
+      where = `${fz} → ${tz}`;
     }
     let s = `${mins} · ${where}`;
     if (opts.stepFree) s += ' · step-free';
