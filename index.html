@@ -349,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.13"></script>
-<script src="details.js?v=2026-06-27.13"></script>
-<script src="places-engine.js?v=2026-06-27.13"></script>
-<script src="places.js?v=2026-06-27.13"></script>
-<script src="evalmap.js?v=2026-06-27.13"></script>
+<script src="data.js?v=2026-06-27.14"></script>
+<script src="details.js?v=2026-06-27.14"></script>
+<script src="places-engine.js?v=2026-06-27.14"></script>
+<script src="places.js?v=2026-06-27.14"></script>
+<script src="evalmap.js?v=2026-06-27.14"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -430,7 +430,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.13';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.14';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -1424,7 +1424,6 @@ function renderNotes(){
      <div class="tools" style="margin-top:10px">
        <button id="notesCopy">📋 Copy All Notes</button>
        <button id="driveOpen">📂 Open Google Drive folder</button>
-       <button id="copySlides">📥 Copy slide PDFs to Drive</button>
      </div>
    </div>`;
   if(!list.length){ html+= all.length
@@ -1456,7 +1455,6 @@ function bindNotes(){
       state.driveFolder=u; save(); }
     window.open(u,'_blank'); };
   const cp=document.getElementById('notesCopy'); if(cp) cp.onclick=copyNotes;
-  const cs=document.getElementById('copySlides'); if(cs) cs.onclick=copySlidesToDrive;
   bindTWL();
 }
 function copySlidesToDrive(){
