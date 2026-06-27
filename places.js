@@ -126,15 +126,15 @@ window.PLACES = [
 "note": "Meds, snacks, water, blister care."
 },
 {
-"id": "blacktap-prop2",
+"id": "blacktap-prop1",
 "name": "Black Tap Craft Burgers",
 "cat": "food",
 "sub": "Burgers",
-"area": "Grand Canal Shoppes",
+"area": "Venetian Level 1",
 "placed": true,
-"map": "prop2",
-"x": 0.55,
-"y": 0.38,
+"map": "prop1",
+"x": 0.62,
+"y": 0.56,
 "price": "$$",
 "hours": "11a–11p",
 "open": [
