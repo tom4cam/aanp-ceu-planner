@@ -79,7 +79,46 @@
     return now.minutes >= o && now.minutes < c;
   }
 
-  const API = { MAP_META, ZONES, ZONE_LABEL, zoneOf, walkBetween, formatHint, isOpenNow };
+  const AREA_ANCHOR = {
+    'Expo':                 {mapId:'expo2', x:0.50, y:0.50},
+    'Grand Canal Shoppes':  {mapId:'prop2', x:0.50, y:0.50},
+    'Venetian Level 1':     {mapId:'prop1', x:0.50, y:0.50},
+    'Palazzo':              {mapId:'prop1', x:0.70, y:0.40},
+    'Casino':               {mapId:'prop1', x:0.40, y:0.70}
+  };
+
+  function placeLoc(place){
+    if (place.placed && place.map) return {mapId:place.map, x:place.x, y:place.y};
+    return AREA_ANCHOR[place.area] || null;
+  }
+
+  function filterPlaces(places, opts){
+    opts = opts || {};
+    const q = (opts.q||'').trim().toLowerCase();
+    const cats = opts.cats && opts.cats.length ? new Set(opts.cats) : null;
+    const areas = opts.areas && opts.areas.length ? new Set(opts.areas) : null;
+    return places.filter(p => {
+      if (cats && !cats.has(p.cat)) return false;
+      if (areas && !areas.has(p.area)) return false;
+      if (opts.stepFree && !p.stepFree) return false;
+      if (opts.openNow){ if (isOpenNow(p, opts.now) !== true) return false; }
+      if (q){
+        const hay = `${p.name} ${p.sub||''} ${p.area||''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function sortByWalk(places, originLoc){
+    return places.map(p => {
+      const loc = placeLoc(p);
+      const walk = (originLoc && loc) ? walkBetween(originLoc, loc) : {minutes:999, far:true, sameMap:false, zoneChange:true, from:'', to:''};
+      return Object.assign({}, p, {_walk: walk});
+    }).sort((a,b) => a._walk.minutes - b._walk.minutes);
+  }
+
+  const API = { MAP_META, ZONES, ZONE_LABEL, zoneOf, walkBetween, formatHint, isOpenNow, AREA_ANCHOR, placeLoc, filterPlaces, sortByWalk };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.PlacesEngine = API;
 })(typeof window !== 'undefined' ? window : globalThis);

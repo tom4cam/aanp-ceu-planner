@@ -58,3 +58,36 @@ test('isOpenNow handles daily array, per-day object, and missing', () => {
   assert.equal(E.isOpenNow({open:{'3':[600,1320],'0':[0,0]}}, {day:0, minutes:700}), false); // closed Sun
   assert.equal(E.isOpenNow({}, {day:3, minutes:700}), null);
 });
+
+const SAMPLE = [
+  {id:'a', name:'Grand Lux Cafe', cat:'sitdown', area:'Grand Canal Shoppes', placed:true, map:'prop2', x:0.4, y:0.5, stepFree:true, open:[600,1320]},
+  {id:'b', name:'Starbucks Expo', cat:'coffee', area:'Expo', placed:true, map:'expo2', x:0.5, y:0.5, open:[420,1080]},
+  {id:'c', name:'Tory Burch', cat:'shop', area:'Grand Canal Shoppes', placed:false, open:[600,1260]}
+];
+
+test('placeLoc falls back to area anchor for unplaced', () => {
+  assert.deepEqual(E.placeLoc(SAMPLE[1]), {mapId:'expo2', x:0.5, y:0.5});
+  const c = E.placeLoc(SAMPLE[2]);
+  assert.equal(c.mapId, E.AREA_ANCHOR['Grand Canal Shoppes'].mapId);
+});
+
+test('filterPlaces by category and query', () => {
+  assert.deepEqual(E.filterPlaces(SAMPLE, {cats:['coffee']}).map(p=>p.id), ['b']);
+  assert.deepEqual(E.filterPlaces(SAMPLE, {q:'tory'}).map(p=>p.id), ['c']);
+});
+
+test('filterPlaces stepFree keeps only step-free', () => {
+  assert.deepEqual(E.filterPlaces(SAMPLE, {stepFree:true}).map(p=>p.id), ['a']);
+});
+
+test('filterPlaces openNow uses now and drops closed', () => {
+  const out = E.filterPlaces(SAMPLE, {openNow:true, now:{day:3, minutes:300}}); // 5:00am, all closed
+  assert.equal(out.length, 0);
+});
+
+test('sortByWalk orders by minutes from origin and adds _walk', () => {
+  const origin = {mapId:'expo2', x:0.5, y:0.5};
+  const out = E.sortByWalk(SAMPLE, origin);
+  assert.equal(out[0].id, 'b'); // same map as origin → closest
+  assert.ok(out[0]._walk.minutes <= out[1]._walk.minutes);
+});
