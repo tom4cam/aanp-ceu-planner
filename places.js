@@ -1,7 +1,7 @@
 window.PLACES = [
 {
 "id": "sbux-expo2",
-"name": "Starbucks (Expo)",
+"name": "Starbucks (Convention Center)",
 "cat": "coffee",
 "sub": "Coffee",
 "area": "Expo",
@@ -16,7 +16,7 @@ window.PLACES = [
 1080
 ],
 "stepFree": true,
-"note": "Closest coffee to the Expo halls."
+"note": "Closest coffee to the Expo halls (#103, Venetian Convention Center)."
 },
 {
 "id": "restroom-expo2",
@@ -48,7 +48,7 @@ window.PLACES = [
 1380
 ],
 "stepFree": true,
-"note": "Reliable sit-down, broad menu, near the casino floor."
+"note": "Reliable sit-down, broad menu, near the casino floor (#108)."
 },
 {
 "id": "bouchon-prop1",
@@ -67,7 +67,7 @@ window.PLACES = [
 1080
 ],
 "stepFree": true,
-"note": "Pastries + espresso; quick grab."
+"note": "Pastries + espresso; quick grab (#111)."
 },
 {
 "id": "yardbird-prop1",
@@ -85,7 +85,8 @@ window.PLACES = [
 660,
 1320
 ],
-"stepFree": true
+"stepFree": true,
+"note": "Southern comfort food (#133)."
 },
 {
 "id": "mott32-prop1",
@@ -104,7 +105,7 @@ window.PLACES = [
 1380
 ],
 "stepFree": true,
-"note": "Dinner only; reservations recommended."
+"note": "Dinner only; reservations recommended (#107)."
 },
 {
 "id": "walgreens-prop1",
@@ -123,7 +124,7 @@ window.PLACES = [
 1440
 ],
 "stepFree": true,
-"note": "Meds, snacks, water, blister care."
+"note": "Meds, snacks, water, blister care (#128)."
 },
 {
 "id": "blacktap-prop1",
@@ -141,7 +142,27 @@ window.PLACES = [
 660,
 1380
 ],
-"stepFree": true
+"stepFree": true,
+"note": "Burgers + crazy shakes (#125)."
+},
+{
+"id": "sugarcane-prop1",
+"name": "Sugarcane Raw Bar Grill",
+"cat": "sitdown",
+"sub": "Small plates",
+"area": "Venetian Level 1",
+"placed": true,
+"map": "prop1",
+"x": 0.48,
+"y": 0.5,
+"price": "$$",
+"hours": "11:30a–11p",
+"open": [
+690,
+1380
+],
+"stepFree": true,
+"note": "Shareable small plates (#105, Level 1)."
 },
 {
 "id": "buddyv-prop2",
@@ -159,7 +180,8 @@ window.PLACES = [
 660,
 1320
 ],
-"stepFree": true
+"stepFree": true,
+"note": "Buddy Valastro's Italian (#200)."
 },
 {
 "id": "canonita-prop2",
@@ -178,25 +200,26 @@ window.PLACES = [
 1320
 ],
 "stepFree": true,
-"note": "Canal-side patio seating."
+"note": "Canal-side patio seating (#219)."
 },
 {
-"id": "sugarcane-prop2",
-"name": "Sugarcane Raw Bar Grill",
-"cat": "sitdown",
-"sub": "Small plates",
+"id": "grimaldis-prop2",
+"name": "Grimaldi's Pizzeria",
+"cat": "food",
+"sub": "Pizza",
 "area": "Grand Canal Shoppes",
 "placed": true,
 "map": "prop2",
 "x": 0.5,
 "y": 0.3,
 "price": "$$",
-"hours": "11:30a–11p",
+"hours": "11a–11p",
 "open": [
-690,
+660,
 1380
 ],
-"stepFree": true
+"stepFree": true,
+"note": "Coal-fired pizza (#321)."
 },
 {
 "id": "tao-prop2",
@@ -215,11 +238,11 @@ window.PLACES = [
 1440
 ],
 "stepFree": true,
-"note": "Dinner; lively/loud."
+"note": "Dinner; lively/loud (#322)."
 },
 {
-"id": "sbux-prop2",
-"name": "Starbucks (Grand Canal Shoppes)",
+"id": "coffeebean-prop2",
+"name": "The Coffee Bean & Tea Leaf",
 "cat": "coffee",
 "sub": "Coffee",
 "area": "Grand Canal Shoppes",
@@ -228,18 +251,19 @@ window.PLACES = [
 "x": 0.48,
 "y": 0.55,
 "price": "$",
-"hours": "6a–8p",
+"hours": "6a–9p",
 "open": [
 360,
-1200
+1260
 ],
-"stepFree": true
+"stepFree": true,
+"note": "Coffee/tea on the Shoppes level (#250)."
 },
 {
-"id": "sephora-prop2",
-"name": "Sephora",
+"id": "bananarep-prop2",
+"name": "Banana Republic",
 "cat": "shop",
-"sub": "Beauty",
+"sub": "Apparel",
 "area": "Grand Canal Shoppes",
 "placed": true,
 "map": "prop2",
@@ -254,22 +278,23 @@ window.PLACES = [
 "stepFree": true
 },
 {
-"id": "lululemon-prop2",
-"name": "Lululemon",
+"id": "coach-prop2",
+"name": "Coach",
 "cat": "shop",
-"sub": "Activewear",
+"sub": "Leather goods",
 "area": "Grand Canal Shoppes",
 "placed": true,
 "map": "prop2",
 "x": 0.66,
 "y": 0.58,
-"price": "$$",
+"price": "$$$",
 "hours": "10a–11p",
 "open": [
 600,
 1380
 ],
-"stepFree": true
+"stepFree": true,
+"note": "#332"
 },
 {
 "id": "restroom-prop2",
