@@ -851,7 +851,7 @@ function renderFood(){
     const approx=p.placed?'':' <span class="approx">approx. area</span>';
     return `<div class="foodrow" data-id="${escapeAttr(p.id)}">
       <div class="fr-main"><b>${escapeHtml(p.name)}</b> ${badge}
-        <div class="fr-sub">${escapeHtml(p.area)}${p.price?' · '+p.price:''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
+        <div class="fr-sub">${escapeHtml(p.area)}${p.price?' · '+escapeHtml(p.price):''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
         <div class="fr-hint">🚶 ${escapeHtml(hint)}</div>
         ${p.note?`<div class="fr-note">${escapeHtml(p.note)}</div>`:''}
       </div>
