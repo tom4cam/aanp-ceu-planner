@@ -349,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.15"></script>
-<script src="details.js?v=2026-06-27.15"></script>
-<script src="places-engine.js?v=2026-06-27.15"></script>
-<script src="places.js?v=2026-06-27.15"></script>
-<script src="evalmap.js?v=2026-06-27.15"></script>
+<script src="data.js?v=2026-06-27.16"></script>
+<script src="details.js?v=2026-06-27.16"></script>
+<script src="places-engine.js?v=2026-06-27.16"></script>
+<script src="places.js?v=2026-06-27.16"></script>
+<script src="evalmap.js?v=2026-06-27.16"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -430,7 +430,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.15';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.16';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -1625,8 +1625,13 @@ try{
   let hxy=q.get('homexy');
   if(hxy){ const m=hxy.split(',').map(v=>parseFloat(v.trim()));
     if(m.length===3 && m.every(n=>!isNaN(n)) && m[1]>=0&&m[1]<=1 && m[2]>=0&&m[2]<=1){ state.homeLoc={lvl:m[0],x:m[1],y:m[2]}; save(); } }
+  // one-tap sync of completed evaluations: ?surveys=26.1.058,26.2.046,... ticks those survey boxes
+  let surv=q.get('surveys');
+  if(surv!=null){ if(!state.surveys) state.surveys={};
+    surv.split(',').forEach(c=>{ c=c.trim(); if(c && byId[c]) state.surveys[c]=true; }); save();
+    if(activeTab==='dash') renderDash(); }
   if(q.get('plan')){ loadPreset(); show(defaultTab()); }
-  if(dv || sc || hm!=null || hxy || q.get('plan')) history.replaceState(null,'',location.pathname);
+  if(dv || sc || hm!=null || hxy || surv!=null || q.get('plan')) history.replaceState(null,'',location.pathname);
 }catch(e){}
 </script>
 </body>
