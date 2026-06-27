@@ -349,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.11"></script>
-<script src="details.js?v=2026-06-27.11"></script>
-<script src="places-engine.js?v=2026-06-27.11"></script>
-<script src="places.js?v=2026-06-27.11"></script>
-<script src="evalmap.js?v=2026-06-27.11"></script>
+<script src="data.js?v=2026-06-27.12"></script>
+<script src="details.js?v=2026-06-27.12"></script>
+<script src="places-engine.js?v=2026-06-27.12"></script>
+<script src="places.js?v=2026-06-27.12"></script>
+<script src="evalmap.js?v=2026-06-27.12"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -430,7 +430,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.11';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.12';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -541,6 +541,9 @@ function truncate(s,n){ return s.length>n? s.slice(0,n-1)+'…':s; }
 /* Day chips for My Plan / My Map — default to the current conference day (else All). */
 function confDays(){ const seen={},out=[]; SESS.forEach(s=>{ if(s.day && !(s.day in seen)){ seen[s.day]=1; out.push({day:s.day,date:s.date,order:s.dayOrder}); } }); return out.sort((a,b)=>a.order-b.order); }
 function currentConfDate(){ const d=new Date(); const md=(d.getMonth()+1)+'/'+d.getDate(); return confDays().some(c=>c.date===md)?md:null; }
+/* Default open tab: My Notes through 6/28; from 6/29/2026 on, Watch Later
+   (she shifts to earning remaining CEUs by recording). */
+function defaultTab(){ return (new Date() >= new Date(2026,5,29)) ? 'rec' : 'notes'; }
 let dayView = currentConfDate() || 'all';
 function dayMatch(s){ return dayView==='all' || s.date===dayView; }
 function dayChipsHTML(){ const chip=(v,l)=>`<button class="daychip${dayView===v?' on':''}" data-day="${escapeAttr(v)}">${l}</button>`;
@@ -1609,7 +1612,7 @@ if(!state._preloaded && Object.keys(state.picks).length===0){
   save();
 }
 renderRibbon();
-show('notes');
+show(defaultTab());
 try{
   const q=new URLSearchParams(location.search);
   // private one-time seed of the Drive folder (kept only in this device's local storage)
@@ -1624,7 +1627,7 @@ try{
   let hxy=q.get('homexy');
   if(hxy){ const m=hxy.split(',').map(v=>parseFloat(v.trim()));
     if(m.length===3 && m.every(n=>!isNaN(n)) && m[1]>=0&&m[1]<=1 && m[2]>=0&&m[2]<=1){ state.homeLoc={lvl:m[0],x:m[1],y:m[2]}; save(); } }
-  if(q.get('plan')){ loadPreset(); show('notes'); }
+  if(q.get('plan')){ loadPreset(); show(defaultTab()); }
   if(dv || sc || hm!=null || hxy || q.get('plan')) history.replaceState(null,'',location.pathname);
 }catch(e){}
 </script>
