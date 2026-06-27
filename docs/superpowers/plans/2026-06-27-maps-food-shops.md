@@ -65,7 +65,7 @@ const assert = require('node:assert');
 const E = require('../places-engine.js');
 
 test('MAP_META covers all six maps with zone+img', () => {
-  for (const id of ['expo2','expo3','expo4','expo5','gcs','palazzo']) {
+  for (const id of ['expo2','expo3','expo4','expo5','prop1','prop2']) {
     assert.ok(E.MAP_META[id], `missing ${id}`);
     assert.equal(typeof E.MAP_META[id].zone, 'string');
     assert.match(E.MAP_META[id].img, /\.jpg$/);
@@ -74,7 +74,7 @@ test('MAP_META covers all six maps with zone+img', () => {
 
 test('zoneOf maps id to zone', () => {
   assert.equal(E.zoneOf('expo4'), 'expo');
-  assert.equal(E.zoneOf('gcs'), 'gcs');
+  assert.equal(E.zoneOf('prop2'), 'property');
   assert.equal(E.zoneOf('nope'), null);
 });
 
@@ -92,9 +92,9 @@ test('walkBetween same zone different level adds a level penalty', () => {
 });
 
 test('walkBetween across zones uses ZONES graph and flags far', () => {
-  const r = E.walkBetween({mapId:'expo2',x:0.5,y:0.5}, {mapId:'gcs',x:0.5,y:0.5});
+  const r = E.walkBetween({mapId:'expo2',x:0.5,y:0.5}, {mapId:'prop2',x:0.5,y:0.5});
   assert.equal(r.zoneChange, true);
-  assert.ok(r.minutes >= E.ZONES.expo.gcs, `got ${r.minutes}`);
+  assert.ok(r.minutes >= E.ZONES.expo.property, `got ${r.minutes}`);
   assert.equal(r.far, true);
 });
 ```
@@ -110,21 +110,22 @@ Expected: FAIL — `Cannot find module '../places-engine.js'`.
 // places-engine.js
 (function (root) {
   const MAP_META = {
-    expo2:   { lvl:2, zone:'expo',    img:'floorplans/level2.jpg', label:'Expo Level 2' },
-    expo3:   { lvl:3, zone:'expo',    img:'floorplans/level3.jpg', label:'Expo Level 3' },
-    expo4:   { lvl:4, zone:'expo',    img:'floorplans/level4.jpg', label:'Expo Level 4' },
-    expo5:   { lvl:5, zone:'expo',    img:'floorplans/level5.jpg', label:'Expo Level 5' },
-    gcs:     { lvl:2, zone:'gcs',     img:'maps/gcs.jpg',          label:'Grand Canal Shoppes' },
-    palazzo: { lvl:2, zone:'palazzo', img:'maps/palazzo.jpg',      label:'Palazzo / Waterfall' }
+    expo2:   { lvl:2, zone:'expo',     img:'floorplans/level2.jpg', label:'Expo Level 2' },
+    expo3:   { lvl:3, zone:'expo',     img:'floorplans/level3.jpg', label:'Expo Level 3' },
+    expo4:   { lvl:4, zone:'expo',     img:'floorplans/level4.jpg', label:'Expo Level 4' },
+    expo5:   { lvl:5, zone:'expo',     img:'floorplans/level5.jpg', label:'Expo Level 5' },
+    // Official Venetian/Palazzo property maps (two levels of one connected complex).
+    prop1:   { lvl:1, zone:'property', img:'maps/prop1.jpg', label:'Venetian/Palazzo — Level 1' },
+    prop2:   { lvl:2, zone:'property', img:'maps/prop2.jpg', label:'Grand Canal Shoppes — Level 2' }
   };
   // Hand-tuned walking minutes between zones (symmetric). Estimates, surfaced as "~N min".
+  // The Expo Convention Center connects to the Venetian/Palazzo complex via the walkway (~7 min).
+  // Within 'property', prop1<->prop2 is a level change (handled by the LEVEL_MIN penalty, not here).
   const ZONES = {
-    expo:    { palazzo:5, gcs:8,  casino:10 },
-    palazzo: { expo:5,    gcs:4,  casino:6 },
-    gcs:     { expo:8,    palazzo:4, casino:3 },
-    casino:  { expo:10,   palazzo:6, gcs:3 }
+    expo:     { property:7 },
+    property: { expo:7 }
   };
-  const ZONE_LABEL = { expo:'Expo', palazzo:'Palazzo walkway', gcs:'Grand Canal Shoppes', casino:'Venetian casino' };
+  const ZONE_LABEL = { expo:'Expo', property:'Venetian/Palazzo' };
 
   const UNIT_MIN = 8;   // minutes per 1.0 of normalized distance across a single map
   const LEVEL_MIN = 3;  // minutes per level change within a zone (elevator wait+ride)
@@ -294,7 +295,7 @@ git commit -m "feat(places): formatHint + isOpenNow"
 ```js
 // append to tests/places-engine.test.js
 const SAMPLE = [
-  {id:'a', name:'Grand Lux Cafe', cat:'sitdown', area:'Grand Canal Shoppes', placed:true, map:'gcs', x:0.4, y:0.5, stepFree:true, open:[600,1320]},
+  {id:'a', name:'Grand Lux Cafe', cat:'sitdown', area:'Grand Canal Shoppes', placed:true, map:'prop2', x:0.4, y:0.5, stepFree:true, open:[600,1320]},
   {id:'b', name:'Starbucks Expo', cat:'coffee', area:'Expo', placed:true, map:'expo2', x:0.5, y:0.5, open:[420,1080]},
   {id:'c', name:'Tory Burch', cat:'shop', area:'Grand Canal Shoppes', placed:false, open:[600,1260]}
 ];
@@ -338,11 +339,11 @@ Insert inside the IIFE (before `const API`):
 
 ```js
   const AREA_ANCHOR = {
-    'Expo':                 {mapId:'expo2',   x:0.50, y:0.50},
-    'Grand Canal Shoppes':  {mapId:'gcs',     x:0.50, y:0.50},
-    'Palazzo':              {mapId:'palazzo', x:0.50, y:0.50},
-    'Waterfall Atrium':     {mapId:'palazzo', x:0.30, y:0.60},
-    'Venetian Casino':      {mapId:'gcs',     x:0.20, y:0.80}  // no casino base map; anchor near GCS
+    'Expo':                 {mapId:'expo2', x:0.50, y:0.50},
+    'Grand Canal Shoppes':  {mapId:'prop2', x:0.50, y:0.50},
+    'Venetian Level 1':     {mapId:'prop1', x:0.50, y:0.50},
+    'Palazzo':              {mapId:'prop1', x:0.70, y:0.40},
+    'Casino':               {mapId:'prop1', x:0.40, y:0.70}
   };
 
   function placeLoc(place){
@@ -442,11 +443,11 @@ Create `places_curated.json` with a starter set. Coordinates are approximate pla
 ```json
 [
   {"id":"sbux-expo2","name":"Starbucks (Expo)","cat":"coffee","sub":"Coffee","area":"Expo","placed":true,"map":"expo2","x":0.78,"y":0.55,"price":"$","hours":"6a–6p","open":[360,1080],"stepFree":true,"note":"Closest coffee to the Expo halls."},
-  {"id":"grandlux-gcs","name":"Grand Lux Cafe","cat":"sitdown","sub":"American","area":"Grand Canal Shoppes","placed":true,"map":"gcs","x":0.34,"y":0.42,"price":"$$","hours":"7a–11p","open":[420,1380],"stepFree":true,"note":"Reliable sit-down, broad menu."},
-  {"id":"blncc-gcs","name":"Black Tap","cat":"food","sub":"Burgers","area":"Grand Canal Shoppes","placed":true,"map":"gcs","x":0.55,"y":0.38,"price":"$$","hours":"11a–11p","open":[660,1380],"stepFree":true},
-  {"id":"walgreens-strip","name":"Walgreens","cat":"essentials","sub":"Pharmacy/Sundries","area":"Venetian Casino","placed":true,"map":"gcs","x":0.18,"y":0.82,"price":"$","hours":"Open 24h","open":[0,1440],"stepFree":true,"note":"Meds, snacks, water, blister care."},
+  {"id":"grandlux-prop2","name":"Grand Lux Cafe","cat":"sitdown","sub":"American","area":"Grand Canal Shoppes","placed":true,"map":"prop2","x":0.34,"y":0.42,"price":"$$","hours":"7a–11p","open":[420,1380],"stepFree":true,"note":"Reliable sit-down, broad menu."},
+  {"id":"blacktap-prop2","name":"Black Tap","cat":"food","sub":"Burgers","area":"Grand Canal Shoppes","placed":true,"map":"prop2","x":0.55,"y":0.38,"price":"$$","hours":"11a–11p","open":[660,1380],"stepFree":true},
+  {"id":"walgreens-prop1","name":"Walgreens","cat":"essentials","sub":"Pharmacy/Sundries","area":"Casino","placed":true,"map":"prop1","x":0.18,"y":0.82,"price":"$","hours":"Open 24h","open":[0,1440],"stepFree":true,"note":"Meds, snacks, water, blister care."},
   {"id":"restroom-expo2","name":"Restrooms — Expo Upper Lobby","cat":"restroom","sub":"Restroom","area":"Expo","placed":true,"map":"expo2","x":0.82,"y":0.63,"hours":"—","stepFree":true},
-  {"id":"venetian-coffee-gcs","name":"Bouchon Bakery","cat":"coffee","sub":"Bakery/Coffee","area":"Grand Canal Shoppes","placed":true,"map":"gcs","x":0.62,"y":0.30,"price":"$$","hours":"7a–6p","open":[420,1080],"stepFree":true}
+  {"id":"bouchon-prop2","name":"Bouchon Bakery","cat":"coffee","sub":"Bakery/Coffee","area":"Grand Canal Shoppes","placed":true,"map":"prop2","x":0.62,"y":0.30,"price":"$$","hours":"7a–6p","open":[420,1080],"stepFree":true}
 ]
 ```
 
@@ -741,42 +742,67 @@ git commit -m "feat(places): build_places merge -> places.js"
 
 ---
 
-### Task 7: Retail/dining base maps
+### Task 7: Property base maps (from the official PDF)
 
 **Files:**
-- Create: `maps/gcs.jpg`, `maps/palazzo.jpg`
+- Create: `maps/prop1.jpg`, `maps/prop2.jpg`
+- Source: `/Users/tom.caswell/map.pdf` (2-page official Venetian/Palazzo map: page 1 = Level 1, page 2 = Level 2 / Grand Canal Shoppes)
 
 **Interfaces:**
-- Consumes: nothing.
-- Produces: two JPG base images referenced by `MAP_META.gcs.img` / `MAP_META.palazzo.img`.
+- Consumes: the source PDF.
+- Produces: two JPG base images referenced by `MAP_META.prop1.img` / `MAP_META.prop2.img`, each **padded to a square** (so the existing `preserveAspectRatio="none"` 0–1 pin model doesn't distort them).
 
-**Note:** These are sourced assets (the Venetian's published property maps for the Grand Canal Shoppes retail level and the Palazzo/Waterfall dining area), resized to roughly match the existing `floorplans/level*.jpg` footprint (long edge ~1000–1600 px, ~150 KB). They can't be unit-tested; verify by file presence, size, and that they load. If a suitable source map isn't readily available, a clean labeled schematic placeholder of the same aspect ratio is acceptable for v1 (pins are approximate regardless).
+**Note:** Built entirely with macOS built-ins (`sips` + JavaScript-for-Automation/PDFKit) — no poppler/ghostscript. `sips` only rasterizes page 1, so page 2 is split out via PDFKit first. Each page is rendered, padded to square with a white border, resized, and JPEG-compressed to ~150–250 KB. The directory sidebar stays in the image (it's the official legend); curated pins are placed by eye on these squares and tuned later.
 
-- [ ] **Step 1: Add the images**
+- [ ] **Step 1: Render both pages and pad to square**
 
-Place the two sourced/resized maps at `maps/gcs.jpg` and `maps/palazzo.jpg`. Example resize (if starting from a larger source, requires `sips`, built into macOS):
 ```bash
+cd "$(git rev-parse --show-toplevel)"
 mkdir -p maps
-sips -Z 1400 source-gcs.png --setProperty format jpeg --out maps/gcs.jpg
-sips -Z 1400 source-palazzo.png --setProperty format jpeg --out maps/palazzo.jpg
-```
-
-- [ ] **Step 2: Verify presence, size, and dimensions**
-
-Run:
-```bash
-for f in maps/gcs.jpg maps/palazzo.jpg; do
-  test -f "$f" && echo "$f $(wc -c < "$f") bytes" || echo "MISSING $f"
+SRC=/Users/tom.caswell/map.pdf
+TMP=$(mktemp -d)
+# Page 1 (Level 1): sips rasterizes the first page directly
+sips -s format png "$SRC" --out "$TMP/p1.png" >/dev/null
+# Page 2 (Level 2): split it into its own 1-page PDF via PDFKit, then rasterize
+osascript -l JavaScript >/dev/null <<JXA
+ObjC.import('PDFKit'); ObjC.import('Foundation');
+var doc = \$.PDFDocument.alloc.initWithURL(\$.NSURL.fileURLWithPath('$SRC'));
+var out = \$.PDFDocument.alloc.init;
+out.insertPageAtIndex(doc.pageAtIndex(1), 0);
+out.writeToFile('$TMP/p2.pdf');
+JXA
+sips -s format png "$TMP/p2.pdf" --out "$TMP/p2.png" >/dev/null
+# Pad each to a white square (max of W/H), resize to 1500, JPEG ~quality to keep <250KB
+for n in 1 2; do
+  W=$(sips -g pixelWidth  "$TMP/p$n.png" | awk '/pixelWidth/{print $2}')
+  H=$(sips -g pixelHeight "$TMP/p$n.png" | awk '/pixelHeight/{print $2}')
+  S=$(( W > H ? W : H ))
+  sips --padToHeightWidth "$S" "$S" --padColor FFFFFF "$TMP/p$n.png" --out "$TMP/sq$n.png" >/dev/null
+  sips -Z 1500 -s format jpeg -s formatOptions 60 "$TMP/sq$n.png" --out "maps/prop$n.jpg" >/dev/null
 done
-node -e "const fs=require('fs');['maps/gcs.jpg','maps/palazzo.jpg'].forEach(f=>{const b=fs.readFileSync(f);if(b[0]!==0xFF||b[1]!==0xD8)throw new Error('not JPEG: '+f);console.log('JPEG ok',f)})"
+echo "done"
 ```
-Expected: both files exist, each well under 400000 bytes, both report `JPEG ok`.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 2: Verify presence, square-ish dimensions, size, and JPEG magic**
 
 ```bash
-git add maps/gcs.jpg maps/palazzo.jpg
-git commit -m "feat(places): add Grand Canal Shoppes + Palazzo base maps"
+for n in 1 2; do
+  f="maps/prop$n.jpg"; test -f "$f" || { echo "MISSING $f"; continue; }
+  echo "$f $(wc -c < "$f") bytes $(sips -g pixelWidth -g pixelHeight "$f" | awk '/pixel/{printf "%s ",$2}')"
+done
+node -e "const fs=require('fs');['maps/prop1.jpg','maps/prop2.jpg'].forEach(f=>{const b=fs.readFileSync(f);if(b[0]!==0xFF||b[1]!==0xD8)throw new Error('not JPEG: '+f);console.log('JPEG ok',f)})"
+```
+Expected: both files exist, square (width == height, ~1500), each < 250000 bytes, both `JPEG ok`. If a file exceeds 250 KB, re-run Step 1 lowering `formatOptions` (e.g. 45).
+
+- [ ] **Step 3: Eyeball the renders**
+
+Open `maps/prop1.jpg` and `maps/prop2.jpg` (e.g. `open maps/prop1.jpg`). Confirm page 1 shows the **Level 1** property map + legend and page 2 shows the **Level 2 / Grand Canal Shoppes** map + legend, each centered on a white square with no clipping.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add maps/prop1.jpg maps/prop2.jpg
+git commit -m "feat(places): add official Venetian/Palazzo Level 1 + 2 base maps"
 ```
 
 ---
@@ -996,24 +1022,25 @@ function placeMapHTML(place, origin){
   if(!loc) return null;
   const meta = PlacesEngine.MAP_META[loc.mapId]; if(!meta) return null;
   const sameMap = origin && origin.mapId===loc.mapId;
-  const W=1000, H=1000;
-  const px=v=>Math.round(v*W), py=v=>Math.round(v*H);
-  const route = sameMap
-    ? `<line x1="${px(origin.x)}" y1="${py(origin.y)}" x2="${px(loc.x)}" y2="${py(loc.y)}" stroke="#7a5cff" stroke-width="6" stroke-dasharray="14 10"/>`
-    : '';
-  const originPin = sameMap
-    ? `<circle cx="${px(origin.x)}" cy="${py(origin.y)}" r="16" fill="#7a5cff"/><text x="${px(origin.x)}" y="${py(origin.y)+6}" text-anchor="middle" font-size="20" fill="#fff" font-weight="700">○</text>`
-    : '';
+  // Match the existing dayMapHTML convention: 100x100 viewBox, image stretched, pins at x*100.
+  const cx=(loc.x*100).toFixed(1), cy=(loc.y*100).toFixed(1);
+  let route='', originPin='';
+  if(sameMap){
+    const ox=(origin.x*100).toFixed(1), oy=(origin.y*100).toFixed(1);
+    route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="1.3" stroke-dasharray="3 2"/>`;
+    originPin=`<circle cx="${ox}" cy="${oy}" r="4.4" fill="#7a5cff" stroke="#fff" stroke-width="1.1"/>`+
+      `<text x="${ox}" y="${(parseFloat(oy)+1.5).toFixed(1)}" text-anchor="middle" font-size="4" fill="#fff" font-weight="700">○</text>`;
+  }
   const tag = place.placed ? '' : ' (approx. area)';
   const mapsUrl = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(place.name+' Venetian Las Vegas');
   const hint = PlacesEngine.formatHint(PlacesEngine.walkBetween(origin||loc, loc), {stepFree:place.stepFree});
   return `<div class="lvlmap">
     <div class="lvlmap-h">${escapeHtml(place.name)} — ${escapeHtml(meta.label)}${tag} ⤢</div>
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
-      <image href="${meta.img}" x="0" y="0" width="${W}" height="${H}"/>
+    <svg viewBox="0 0 100 100" width="100%">
+      <image href="${meta.img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>
       ${route}${originPin}
-      <circle cx="${px(loc.x)}" cy="${py(loc.y)}" r="20" fill="#e8463c"/>
-      <text x="${px(loc.x)}" y="${py(loc.y)+7}" text-anchor="middle" font-size="22" fill="#fff" font-weight="700">●</text>
+      <circle cx="${cx}" cy="${cy}" r="5.2" fill="#e8463c" stroke="#fff" stroke-width="1.1"/>
+      <text x="${cx}" y="${(parseFloat(cy)+1.7).toFixed(1)}" text-anchor="middle" font-size="5" fill="#fff" font-weight="700">●</text>
     </svg>
     <div class="lvlmap-key">🚶 ${escapeHtml(hint)} · <a href="${mapsUrl}" target="_blank" rel="noopener">Open in Maps ↗</a>${sameMap?' · ○ you · ● destination':''}</div>
   </div>`;
