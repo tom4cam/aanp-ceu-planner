@@ -200,6 +200,17 @@ main{padding:12px var(--gut) 80px}
 .sd-openlink{display:inline-block;margin-top:2px;background:var(--rec-soft);color:var(--rec);border-radius:9px;padding:9px 12px;font-size:14px;font-weight:700;text-decoration:none}
 .sd-check{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:14.5px;font-weight:600;color:var(--brand-dk);cursor:pointer}
 .sd-check input{width:20px;height:20px;flex:0 0 auto}
+.evalbtn{display:inline-block;background:var(--brand);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;text-decoration:none;margin:2px 0 12px}
+.surveyprog{font-size:14px;color:var(--brand-dk);font-weight:600;margin:2px 0 8px}
+.surveylist{margin-bottom:6px}
+.surveyrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eef1f5}
+.surveyrow:last-child{border-bottom:0}
+.surveyrow .srchk{width:20px;height:20px;flex:0 0 auto}
+.sr-main{flex:1;font-size:14px;line-height:1.3}
+.sr-sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.surveyrow.done{opacity:.6}
+.surveyrow.done .sr-main b{text-decoration:line-through}
+.sr-eval{flex:0 0 auto;color:var(--brand);font-weight:600;text-decoration:none;font-size:13px;border:1px solid var(--brand);border-radius:8px;padding:6px 9px;white-space:nowrap}
 .sd-saved{font-size:12px;color:var(--live);font-weight:600;margin-left:6px}
 .moreinfo{color:var(--rec);font-weight:700}
 .nt-row{font-size:13.5px;color:var(--ink);margin-top:4px}
@@ -272,6 +283,19 @@ main{padding:12px var(--gut) 80px}
   a[href]:after{content:""}
 }
 .print-on{display:none}
+.foodbar{padding:8px var(--gut)}
+.foodbar input[type=search]{width:100%;padding:9px 11px;font-size:15px;border:1px solid #d4d8e0;border-radius:10px;margin:8px 0}
+.foodchips{display:flex;flex-wrap:wrap;gap:6px}
+.foodchip{border:1px solid #cdd3dd;background:#fff;border-radius:16px;padding:5px 10px;font-size:12.5px}
+.foodchip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.foodrow{display:flex;align-items:center;gap:10px;padding:11px var(--gut);border-bottom:1px solid #eef1f5}
+.fr-main{flex:1}.fr-sub{color:#5a6472;font-size:13px;margin-top:2px}
+.fr-hint{font-size:13px;margin-top:3px}.fr-note{font-size:12.5px;color:#6b7280;margin-top:3px;font-style:italic}
+.fr-map{flex:0 0 auto;border:1px solid var(--brand);color:var(--brand);background:#fff;border-radius:8px;padding:7px 10px;font-size:13px}
+.foodrow .open{color:#1a8a4a;font-size:12px;font-weight:600}.foodrow .closed{color:#b23;font-size:12px}
+.fr-sub .approx{color:#a06a00;font-size:11.5px}
+.foodlist .empty{padding:20px var(--gut);color:#6b7280}
+.origin-label{color:#5a6472;font-size:13px}
 </style>
 </head>
 <body>
@@ -294,6 +318,7 @@ main{padding:12px var(--gut) 80px}
   <button data-tab="browse" class="on">Browse</button>
   <button data-tab="plan">My Plan</button>
   <button data-tab="live">My Map</button>
+  <button data-tab="food">🍽️ Food &amp; Shops</button>
   <button data-tab="notes">My Notes</button>
   <button data-tab="dash">CEUs</button>
   <button data-tab="rec">Watch Later</button>
@@ -305,6 +330,7 @@ main{padding:12px var(--gut) 80px}
 <main>
   <section class="view" id="view-browse"></section>
   <section class="view" id="view-live"></section>
+  <section class="view" id="view-food" style="display:none"><div id="foodBody"></div></section>
   <section class="view" id="view-rec"></section>
   <section class="view" id="view-dash"></section>
   <section class="view print-on" id="view-plan"></section>
@@ -316,8 +342,10 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-21.14"></script>
-<script src="details.js?v=2026-06-21.14"></script>
+<script src="data.js?v=2026-06-27.2"></script>
+<script src="details.js?v=2026-06-27.2"></script>
+<script src="places-engine.js?v=2026-06-27.2"></script>
+<script src="places.js?v=2026-06-27.2"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -399,7 +427,14 @@ function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, driveFolder:'', driveScriptUrl:'', homeBase:true, homeLabel:'', homeLoc:null, _seedM_:false, _preloaded:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, surveys:{}, driveFolder:'', driveScriptUrl:'', homeBase:true, homeLabel:'', homeLoc:null, _seedM_:false, _preloaded:false};
+/* CEU evaluation portal (from the AANP app's "Complete your Evaluation" link). Sarah signs in
+   with her own AANP credentials there; we only open it. Per-session completion is tracked locally. */
+const EVAL_URL = 'https://authis4.aanp.org/Legacy/Login?returnUrl=https%3A%2F%2Feval.aanp.org/conference%2F206';
+function surveyDone(id){ return !!(state.surveys && state.surveys[id]); }
+function setSurvey(id,on){ if(!state.surveys) state.surveys={}; if(on) state.surveys[id]=true; else delete state.surveys[id]; save(); }
+function ceEarningPicks(){ return SESS.filter(s=>{const p=pickOf(s.id); return (p==='live'||p==='rec') && +s.ce>0;})
+  .sort((a,b)=>((a.dayOrder||0)-(b.dayOrder||0))||((a.startMin||0)-(b.startMin||0))); }
 let state = load();
 function load(){
   try{const j=JSON.parse(localStorage.getItem(LS_KEY)); if(j) return Object.assign({},DEF,j);}catch(e){}
@@ -697,6 +732,9 @@ function openSessionModal(id){
     <div class="sd-field"><label>Slides / handout / Google Drive link</label><input data-sf="slides" inputmode="url" value="${escapeAttr(slidesVal)}" placeholder="Paste a link (handout, Drive file, …)"></div>
     ${openUrl?`<a class="sd-openlink" href="${escapeAttr(openUrl)}" target="_blank" rel="noopener">📄 Open handouts / slides</a>`:''}
     <label class="sd-check"><input type="checkbox" data-sf="saveSlides" ${saved.saveSlides?'checked':''}> ⭐ Save slides to My Notes</label>
+    ${+s.ce>0?`<div class="sd-h">Earn this CEU</div>
+    <a class="sd-openlink" href="${EVAL_URL}" target="_blank" rel="noopener">📋 Complete evaluation ↗</a>
+    <label class="sd-check"><input type="checkbox" data-survey="${escapeAttr(id)}" ${surveyDone(id)?'checked':''}> ✅ Survey completed</label>`:''}
     <div class="sd-field" style="margin-top:12px"><label>My notes</label><textarea data-sf="notes" placeholder="Type your notes for this session…">${escapeHtml(saved.notes||'')}</textarea></div>
     <button class="sd-done sd-done-bottom" id="sdDoneBottom">Done ✕</button>
   `;
@@ -709,6 +747,7 @@ function openSessionModal(id){
       if(si && !si.value && d.handout){ si.value=d.handout; cur.slides=d.handout; } }
     save();
   }));
+  const sv=card.querySelector('[data-survey]'); if(sv) sv.addEventListener('change',()=>{ setSurvey(id, sv.checked); if(activeTab==='dash') renderDash(); });
 }
 function closeSessModal(){ const m=document.getElementById('sessModal'); m.classList.remove('show'); document.body.style.overflow='';
   if(activeTab==='notes') renderNotes(); }
@@ -742,7 +781,8 @@ function closerAlternatives(anchorRoom, s, maxN){
     .sort((a,b)=>a.dist.d-b.dist.d).slice(0,maxN);
 }
 /* per-day floor map: real venue floorplan with your room pins overlaid */
-const LVL_IMG={2:'floorplans/level2.jpg',3:'floorplans/level3.jpg',4:'floorplans/level4.jpg',5:'floorplans/level5.jpg'};
+// Expo floor images now come from the shared PlacesEngine.MAP_META registry.
+const LVL_IMG={2:PlacesEngine.MAP_META.expo2.img,3:PlacesEngine.MAP_META.expo3.img,4:PlacesEngine.MAP_META.expo4.img,5:PlacesEngine.MAP_META.expo5.img};
 function dayMapHTML(daySessions){
   const pts=daySessions.map((s,i)=>({n:i+1,g:geoOf(roomOf(s)),room:roomOf(s)})).filter(p=>p.g);
   if(pts.length<2) return '';
@@ -779,6 +819,41 @@ function dayMapHTML(daySessions){
   }).join('');
   return `<div class="daymap no-print">${boxes}<div class="daymap-note">Numbered pins = your sessions, in order, on the real venue floor plan. Orange line = the walk on that floor; pins on different floors mean an elevator trip — plan extra time. The purple <b>P</b> pin marks the walk in from your Palazzo Tower suite (approximate — the Expo entrance). 🦶</div></div>`;
 }
+function placeMapHTML(place, origin){
+  const loc = PlacesEngine.placeLoc(place);
+  if(!loc) return null;
+  const meta = PlacesEngine.MAP_META[loc.mapId]; if(!meta) return null;
+  const sameMap = origin && origin.mapId===loc.mapId;
+  // Match the existing dayMapHTML convention: 100x100 viewBox, image stretched, pins at x*100.
+  const cx=(loc.x*100).toFixed(1), cy=(loc.y*100).toFixed(1);
+  let route='', originPin='';
+  if(sameMap){
+    const ox=(origin.x*100).toFixed(1), oy=(origin.y*100).toFixed(1);
+    route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="1.3" stroke-dasharray="3 2"/>`;
+    originPin=`<circle cx="${ox}" cy="${oy}" r="4.4" fill="#7a5cff" stroke="#fff" stroke-width="1.1"/>`+
+      `<text x="${ox}" y="${(parseFloat(oy)+1.5).toFixed(1)}" text-anchor="middle" font-size="4" fill="#fff" font-weight="700">○</text>`;
+  }
+  const tag = place.placed ? '' : ' (approx. area)';
+  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(place.name+' Venetian Las Vegas');
+  const hint = PlacesEngine.formatHint(PlacesEngine.walkBetween(origin||loc, loc), {stepFree:place.stepFree});
+  return `<div class="lvlmap">
+    <div class="lvlmap-h">${escapeHtml(place.name)} — ${escapeHtml(meta.label)}${tag} ⤢</div>
+    <svg viewBox="0 0 100 100" width="100%">
+      <image href="${meta.img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>
+      ${route}${originPin}
+      <circle cx="${cx}" cy="${cy}" r="5.2" fill="#e8463c" stroke="#fff" stroke-width="1.1"/>
+      <text x="${cx}" y="${(parseFloat(cy)+1.7).toFixed(1)}" text-anchor="middle" font-size="5" fill="#fff" font-weight="700">●</text>
+    </svg>
+    <div class="lvlmap-key">🚶 ${escapeHtml(hint)} · <a href="${mapsUrl}" target="_blank" rel="noopener">Open in Maps ↗</a>${sameMap?' · ○ you · ● destination':''}</div>
+  </div>`;
+}
+function openPlaceMap(id){
+  const place=(window.PLACES||[]).find(p=>p.id===id); if(!place){ toast('Place not found'); return; }
+  const html=placeMapHTML(place, foodOrigin());
+  if(!html){ toast('No map for this spot'); return; }
+  const wrap=document.createElement('div'); wrap.innerHTML=html;
+  openMapModal(wrap.querySelector('.lvlmap'));
+}
 function cardLiveHTML(s,isConf,num){
   return `<div class="scard is-live" data-id="${s.id}">
     <h3 class="tlink" data-more="${s.id}">${num?`<span class="snum">${num}</span>`:''}${escapeHtml(s.title)}</h3>
@@ -795,6 +870,75 @@ function cardLiveHTML(s,isConf,num){
       <button class="recflip" data-drop="${s.id}">remove</button>
     </div>
   </div>`;
+}
+
+/* ---------- Food & Shops ---------- */
+function nextSessionLoc(){
+  // earliest live pick in chronological order (numeric day/time); origin for the food list.
+  const live = SESS.filter(s=>pickOf(s.id)==='live');
+  if(!live.length) return null;
+  live.sort((a,b)=> ((a.dayOrder||0)-(b.dayOrder||0)) || ((a.startMin||0)-(b.startMin||0)));
+  const s = live[0];
+  const g = geoOf(roomOf(s)); if(!g) return null;
+  return {mapId:'expo'+g.lvl, x:g.x, y:g.y, label:'next session ('+(s.code||s.title||'')+')'};
+}
+function foodOrigin(){
+  const mode = state.foodOrigin || 'next';
+  if(mode==='home'){ const h=homeLoc(); return {mapId:'expo'+h.lvl, x:h.x, y:h.y, label:homeName()}; }
+  const n = nextSessionLoc();
+  if(n) return n;
+  const h=homeLoc(); return {mapId:'expo'+h.lvl, x:h.x, y:h.y, label:homeName()}; // fallback
+}
+function foodNow(){
+  const d=new Date();
+  return {day:d.getDay(), minutes:d.getHours()*60+d.getMinutes()};
+}
+const FOOD_CATS=[['coffee','☕ Coffee'],['food','🍔 Food'],['sitdown','🍽️ Sit-down'],['essentials','🧴 Essentials'],['restroom','🚻 Restrooms'],['shop','🛍️ Shops']];
+function renderFood(){
+  const body=document.getElementById('foodBody'); if(!body) return;
+  const f=state.foodFilters||(state.foodFilters={cats:[],openNow:false,stepFree:false,q:''});
+  const origin=foodOrigin(), now=foodNow();
+  const filtered=PlacesEngine.filterPlaces(window.PLACES||[], {q:f.q,cats:f.cats,openNow:f.openNow,stepFree:f.stepFree,now});
+  const sorted=PlacesEngine.sortByWalk(filtered, origin);
+  const chip=(key,label,on)=>`<button class="foodchip${on?' on':''}" data-cat="${key}">${label}</button>`;
+  const rows=sorted.map(p=>{
+    const open=PlacesEngine.isOpenNow(p, now);
+    const badge=open===true?'<span class="open">Open</span>':open===false?'<span class="closed">Closed</span>':'';
+    const hint=PlacesEngine.formatHint(p._walk, {stepFree:p.stepFree});
+    const approx=p.placed?'':' <span class="approx">approx. area</span>';
+    return `<div class="foodrow" data-id="${escapeAttr(p.id)}">
+      <div class="fr-main"><b>${escapeHtml(p.name)}</b> ${badge}
+        <div class="fr-sub">${escapeHtml(p.area)}${p.price?' · '+escapeHtml(p.price):''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
+        <div class="fr-hint">🚶 ${escapeHtml(hint)}</div>
+        ${p.note?`<div class="fr-note">${escapeHtml(p.note)}</div>`:''}
+      </div>
+      <button class="fr-map" data-id="${escapeAttr(p.id)}">Map ›</button>
+    </div>`;
+  }).join('');
+  body.innerHTML=`
+    <div class="foodbar">
+      <div class="foodorigin">From: <select id="foodOriginSel">
+        <option value="next"${(state.foodOrigin||'next')==='next'?' selected':''}>my next session</option>
+        <option value="home"${state.foodOrigin==='home'?' selected':''}>my Palazzo suite</option>
+      </select> <span class="origin-label">→ ${escapeHtml(origin.label)}</span></div>
+      <input id="foodSearch" type="search" placeholder="Search shops &amp; restaurants…" value="${escapeAttr(f.q)}">
+      <div class="foodchips">${FOOD_CATS.map(c=>chip(c[0],c[1],f.cats.includes(c[0]))).join('')}
+        ${chip('__open','🕒 Open now',f.openNow)}${chip('__step','♿ Step-free',f.stepFree)}</div>
+    </div>
+    <div class="foodlist">${rows||'<p class="empty">No places match those filters.</p>'}</div>`;
+  bindFood();
+}
+function bindFood(){
+  const sel=document.getElementById('foodOriginSel'); if(sel) sel.onchange=()=>{ state.foodOrigin=sel.value; save(); renderFood(); };
+  const q=document.getElementById('foodSearch'); if(q) q.oninput=()=>{ state.foodFilters.q=q.value; save(); renderFood(); };
+  document.querySelectorAll('.foodchip').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.cat, f=state.foodFilters;
+    if(k==='__open') f.openNow=!f.openNow;
+    else if(k==='__step') f.stepFree=!f.stepFree;
+    else { const i=f.cats.indexOf(k); if(i>=0) f.cats.splice(i,1); else f.cats.push(k); }
+    save(); renderFood();
+  });
+  document.querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
 }
 
 /* ====================================================================== */
@@ -877,6 +1021,12 @@ function renderDash(){
   const el=document.getElementById('view-dash');
   const t=totals();
   const pct = v => Math.min(100, v/TARGET*100);
+  const ceList=ceEarningPicks(); const svDone=ceList.filter(s=>surveyDone(s.id)).length;
+  const svRows=ceList.map(s=>`<div class="surveyrow${surveyDone(s.id)?' done':''}">
+      <input type="checkbox" class="srchk" data-survey="${escapeAttr(s.id)}" ${surveyDone(s.id)?'checked':''}>
+      <div class="sr-main"><b>${escapeHtml(s.code)}</b> ${escapeHtml(s.title)}<div class="sr-sub">${escapeHtml(s.day)} · ${fmtCE(s.ce)} CE · ${pickOf(s.id)==='live'?'🟢 Live':'🔵 Watch later'}</div></div>
+      <a class="sr-eval" href="${EVAL_URL}" target="_blank" rel="noopener">Evaluate ↗</a>
+    </div>`).join('');
   el.innerHTML=`
    <div class="bigprogress">
      <div class="hd"><div>Total CEUs</div><div class="tot">${fmtCE(t.total)}<small> / ${TARGET}</small></div></div>
@@ -900,6 +1050,13 @@ function renderDash(){
      <div class="stat live"><div class="n">${fmtCE(t.live)}</div><div class="l">Planned live (${SESS.filter(s=>pickOf(s.id)==='live').length})</div></div>
      <div class="stat rec"><div class="n">${fmtCE(t.rec)}</div><div class="l">Planned recordings (${SESS.filter(s=>pickOf(s.id)==='rec').length})</div></div>
      <div class="stat total"><div class="n">${fmtCE(t.total)}</div><div class="l">Grand total</div></div>
+   </div>
+
+   <div class="panel">
+     <h2>📋 CEU Survey Tracker <span style="font-weight:400;color:var(--muted);font-size:12px">(complete evaluations to claim credit)</span></h2>
+     <a class="evalbtn" href="${EVAL_URL}" target="_blank" rel="noopener">Complete evaluations to earn your CEUs ↗</a>
+     ${ceList.length?`<div class="surveyprog">Surveys completed: <b>${svDone}</b> of ${ceList.length}</div><div class="surveylist">${svRows}</div>`:'<div class="note">Pick some live or watch-later sessions and their surveys will appear here to track.</div>'}
+     <div class="note">Tick each session once you've completed its evaluation in the AANP portal. Includes live + watch-later sessions that award CE.</div>
    </div>
 
    <div class="panel">
@@ -940,6 +1097,7 @@ function renderDash(){
     // update totals text live without full rerender
     const tt=totals(); el.querySelector('.bigprogress .tot').innerHTML=fmtCE(tt.total)+'<small> / '+TARGET+'</small>'; });
   drawManual();
+  el.querySelectorAll('.srchk').forEach(c=>c.onchange=()=>{ setSurvey(c.dataset.survey, c.checked); renderDash(); });
   document.getElementById('addManual').onclick=()=>{ state.manual.push({label:'',ceu:''}); save(); drawManual(); };
   document.getElementById('exportBtn').onclick=doExport;
   document.getElementById('importBtn').onclick=()=>document.getElementById('fileInp').click();
@@ -1298,6 +1456,7 @@ function renderActive(){
   else if(activeTab==='plan') renderPlan();
   else if(activeTab==='notes') renderNotes();
   else if(activeTab==='help') renderHelp();
+  else if(activeTab==='food') renderFood();
 }
 function show(tab){
   activeTab=tab;

@@ -1,0 +1,287 @@
+window.PLACES = [
+{
+"id": "sbux-expo2",
+"name": "Starbucks (Expo)",
+"cat": "coffee",
+"sub": "Coffee",
+"area": "Expo",
+"placed": true,
+"map": "expo2",
+"x": 0.78,
+"y": 0.55,
+"price": "$",
+"hours": "6a–6p",
+"open": [
+360,
+1080
+],
+"stepFree": true,
+"note": "Closest coffee to the Expo halls."
+},
+{
+"id": "restroom-expo2",
+"name": "Restrooms — Expo Upper Lobby",
+"cat": "restroom",
+"sub": "Restroom",
+"area": "Expo",
+"placed": true,
+"map": "expo2",
+"x": 0.82,
+"y": 0.63,
+"hours": "—",
+"stepFree": true
+},
+{
+"id": "grandlux-prop1",
+"name": "Grand Lux Cafe",
+"cat": "sitdown",
+"sub": "American",
+"area": "Venetian Level 1",
+"placed": true,
+"map": "prop1",
+"x": 0.55,
+"y": 0.45,
+"price": "$$",
+"hours": "7a–11p",
+"open": [
+420,
+1380
+],
+"stepFree": true,
+"note": "Reliable sit-down, broad menu, near the casino floor."
+},
+{
+"id": "bouchon-prop1",
+"name": "Bouchon Bakery",
+"cat": "coffee",
+"sub": "Bakery/Coffee",
+"area": "Venetian Level 1",
+"placed": true,
+"map": "prop1",
+"x": 0.6,
+"y": 0.35,
+"price": "$$",
+"hours": "7a–6p",
+"open": [
+420,
+1080
+],
+"stepFree": true,
+"note": "Pastries + espresso; quick grab."
+},
+{
+"id": "yardbird-prop1",
+"name": "Yardbird Southern Table & Bar",
+"cat": "sitdown",
+"sub": "Southern",
+"area": "Venetian Level 1",
+"placed": true,
+"map": "prop1",
+"x": 0.5,
+"y": 0.55,
+"price": "$$",
+"hours": "11a–10p",
+"open": [
+660,
+1320
+],
+"stepFree": true
+},
+{
+"id": "mott32-prop1",
+"name": "Mott 32",
+"cat": "sitdown",
+"sub": "Chinese",
+"area": "Palazzo",
+"placed": true,
+"map": "prop1",
+"x": 0.72,
+"y": 0.4,
+"price": "$$$",
+"hours": "5p–11p",
+"open": [
+1020,
+1380
+],
+"stepFree": true,
+"note": "Dinner only; reservations recommended."
+},
+{
+"id": "walgreens-prop1",
+"name": "Walgreens",
+"cat": "essentials",
+"sub": "Pharmacy/Sundries",
+"area": "Casino",
+"placed": true,
+"map": "prop1",
+"x": 0.3,
+"y": 0.78,
+"price": "$",
+"hours": "Open 24h",
+"open": [
+0,
+1440
+],
+"stepFree": true,
+"note": "Meds, snacks, water, blister care."
+},
+{
+"id": "blacktap-prop1",
+"name": "Black Tap Craft Burgers",
+"cat": "food",
+"sub": "Burgers",
+"area": "Venetian Level 1",
+"placed": true,
+"map": "prop1",
+"x": 0.62,
+"y": 0.56,
+"price": "$$",
+"hours": "11a–11p",
+"open": [
+660,
+1380
+],
+"stepFree": true
+},
+{
+"id": "buddyv-prop2",
+"name": "Buddy V's Ristorante",
+"cat": "sitdown",
+"sub": "Italian",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.45,
+"y": 0.45,
+"price": "$$",
+"hours": "11a–10p",
+"open": [
+660,
+1320
+],
+"stepFree": true
+},
+{
+"id": "canonita-prop2",
+"name": "Cañonita",
+"cat": "sitdown",
+"sub": "Mexican",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.62,
+"y": 0.5,
+"price": "$$",
+"hours": "11a–10p",
+"open": [
+660,
+1320
+],
+"stepFree": true,
+"note": "Canal-side patio seating."
+},
+{
+"id": "sugarcane-prop2",
+"name": "Sugarcane Raw Bar Grill",
+"cat": "sitdown",
+"sub": "Small plates",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.5,
+"y": 0.3,
+"price": "$$",
+"hours": "11:30a–11p",
+"open": [
+690,
+1380
+],
+"stepFree": true
+},
+{
+"id": "tao-prop2",
+"name": "TAO Asian Bistro",
+"cat": "sitdown",
+"sub": "Asian",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.4,
+"y": 0.35,
+"price": "$$$",
+"hours": "5p–12a",
+"open": [
+1020,
+1440
+],
+"stepFree": true,
+"note": "Dinner; lively/loud."
+},
+{
+"id": "sbux-prop2",
+"name": "Starbucks (Grand Canal Shoppes)",
+"cat": "coffee",
+"sub": "Coffee",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.48,
+"y": 0.55,
+"price": "$",
+"hours": "6a–8p",
+"open": [
+360,
+1200
+],
+"stepFree": true
+},
+{
+"id": "sephora-prop2",
+"name": "Sephora",
+"cat": "shop",
+"sub": "Beauty",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.58,
+"y": 0.62,
+"price": "$$",
+"hours": "10a–11p",
+"open": [
+600,
+1380
+],
+"stepFree": true
+},
+{
+"id": "lululemon-prop2",
+"name": "Lululemon",
+"cat": "shop",
+"sub": "Activewear",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.66,
+"y": 0.58,
+"price": "$$",
+"hours": "10a–11p",
+"open": [
+600,
+1380
+],
+"stepFree": true
+},
+{
+"id": "restroom-prop2",
+"name": "Restrooms — Grand Canal Shoppes",
+"cat": "restroom",
+"sub": "Restroom",
+"area": "Grand Canal Shoppes",
+"placed": true,
+"map": "prop2",
+"x": 0.52,
+"y": 0.72,
+"hours": "—",
+"stepFree": true
+}
+];
