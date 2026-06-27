@@ -852,10 +852,10 @@ function cardLiveHTML(s,isConf,num){
 
 /* ---------- Food & Shops ---------- */
 function nextSessionLoc(){
-  // earliest live pick (by day+start) whose end hasn't passed; falls back to first live pick.
-  const live = (window.DATA||[]).filter(s=>state.picks[s.id]==='live');
+  // earliest live pick in chronological order (numeric day/time); origin for the food list.
+  const live = SESS.filter(s=>pickOf(s.id)==='live');
   if(!live.length) return null;
-  live.sort((a,b)=> (a.day||'').localeCompare(b.day||'') || (a.start||'').localeCompare(b.start||''));
+  live.sort((a,b)=> ((a.dayOrder||0)-(b.dayOrder||0)) || ((a.startMin||0)-(b.startMin||0)));
   const s = live[0];
   const g = geoOf(roomOf(s)); if(!g) return null;
   return {mapId:'expo'+g.lvl, x:g.x, y:g.y, label:'next session ('+(s.code||s.title||'')+')'};
