@@ -559,10 +559,12 @@ SOURCES = [
 def slugify(name):
     return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
 
+# Order matters: a strong "sit-down" signal (e.g. raw_cat "Restaurant") must win
+# over an incidental 'cafe' substring in the name (e.g. "Grand Lux Cafe").
 def categorize(name, raw_cat):
     t = f"{name} {raw_cat}".lower()
-    if any(w in t for w in ['cafe', 'coffee', 'bakery', 'espresso', 'starbucks']): return 'coffee'
     if any(w in t for w in ['restaurant', 'grill', 'kitchen', 'trattoria', 'steak', 'dining', 'bar']): return 'sitdown'
+    if any(w in t for w in ['cafe', 'coffee', 'bakery', 'espresso', 'starbucks']): return 'coffee'
     if any(w in t for w in ['pizza', 'burger', 'taco', 'food', 'snack', 'gelato', 'ice cream', 'noodle']): return 'food'
     if any(w in t for w in ['pharmacy', 'walgreens', 'cvs', 'sundries', 'drug']): return 'essentials'
     return 'shop'
