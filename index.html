@@ -69,10 +69,10 @@ header.app{background:var(--brand);color:#fff;padding:10px 0 0}
 .ribbon-meta{font-size:12px;opacity:.9;text-align:right;min-width:84px}
 
 /* ---- Tabs ---- */
-nav.tabs{display:flex;background:var(--brand);overflow-x:auto;scrollbar-width:none;padding:0 var(--gut)}
+nav.tabs{display:flex;flex-wrap:wrap;background:var(--brand);scrollbar-width:none;padding:0 calc(var(--gut) / 2)}
 nav.tabs::-webkit-scrollbar{display:none}
-nav.tabs button{flex:1 0 auto;background:transparent;border:0;color:rgba(255,255,255,.72);
-  padding:11px 14px 12px;font-size:13.5px;font-weight:600;white-space:nowrap;
+nav.tabs button{flex:1 1 auto;background:transparent;border:0;color:rgba(255,255,255,.72);
+  padding:10px 10px 11px;font-size:13px;font-weight:600;white-space:nowrap;
   border-bottom:3px solid transparent}
 nav.tabs button.on{color:#fff;border-bottom-color:#ffe08a}
 
@@ -320,11 +320,11 @@ main{padding:12px var(--gut) 80px}
 <nav class="tabs" id="tabs">
   <button data-tab="browse" class="on">Browse</button>
   <button data-tab="plan">My Plan</button>
-  <button data-tab="live">My Map</button>
-  <button data-tab="food">🍽️ Food &amp; Shops</button>
   <button data-tab="notes">My Notes</button>
+  <button data-tab="live">My Map</button>
   <button data-tab="dash">CEUs</button>
   <button data-tab="rec">Watch Later</button>
+  <button data-tab="food">🍽️ Food &amp; Shops</button>
   <button data-tab="help">ℹ️ Help</button>
 </nav>
 </div>
@@ -345,11 +345,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.5"></script>
-<script src="details.js?v=2026-06-27.5"></script>
-<script src="places-engine.js?v=2026-06-27.5"></script>
-<script src="places.js?v=2026-06-27.5"></script>
-<script src="evalmap.js?v=2026-06-27.5"></script>
+<script src="data.js?v=2026-06-27.6"></script>
+<script src="details.js?v=2026-06-27.6"></script>
+<script src="places-engine.js?v=2026-06-27.6"></script>
+<script src="places.js?v=2026-06-27.6"></script>
+<script src="evalmap.js?v=2026-06-27.6"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -847,27 +847,33 @@ function placeMapHTML(place, origin){
   if(!loc) return null;
   const meta = PlacesEngine.MAP_META[loc.mapId]; if(!meta) return null;
   const sameMap = origin && origin.mapId===loc.mapId;
+  const placed = place.placed;
   // Match the existing dayMapHTML convention: 100x100 viewBox, image stretched, pins at x*100.
   const cx=(loc.x*100).toFixed(1), cy=(loc.y*100).toFixed(1);
-  let route='', originPin='';
-  if(sameMap){
-    const ox=(origin.x*100).toFixed(1), oy=(origin.y*100).toFixed(1);
-    route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="1.3" stroke-dasharray="3 2"/>`;
-    originPin=`<circle cx="${ox}" cy="${oy}" r="4.4" fill="#7a5cff" stroke="#fff" stroke-width="1.1"/>`+
-      `<text x="${ox}" y="${(parseFloat(oy)+1.5).toFixed(1)}" text-anchor="middle" font-size="4" fill="#fff" font-weight="700">○</text>`;
+  let route='', originPin='', destPin='';
+  if(placed){
+    // precise pin (curated) + walk route from origin when on the same map
+    destPin=`<circle cx="${cx}" cy="${cy}" r="5.2" fill="#e8463c" stroke="#fff" stroke-width="1.1"/>`+
+      `<text x="${cx}" y="${(parseFloat(cy)+1.7).toFixed(1)}" text-anchor="middle" font-size="5" fill="#fff" font-weight="700">●</text>`;
+    if(sameMap){
+      const ox=(origin.x*100).toFixed(1), oy=(origin.y*100).toFixed(1);
+      route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="1.3" stroke-dasharray="3 2"/>`;
+      originPin=`<circle cx="${ox}" cy="${oy}" r="4.4" fill="#7a5cff" stroke="#fff" stroke-width="1.1"/>`+
+        `<text x="${ox}" y="${(parseFloat(oy)+1.5).toFixed(1)}" text-anchor="middle" font-size="4" fill="#fff" font-weight="700">○</text>`;
+    }
   }
-  const tag = place.placed ? '' : ' (approx. area)';
+  // Directory venues aren't hand-placed; the official map prints each one's number, so guide by number.
+  const tag = placed ? '' : (place.num ? ` · #${escapeHtml(place.num)}` : ' (approx. area)');
+  const findNote = (!placed && place.num) ? `🔎 Find <b>#${escapeHtml(place.num)}</b> on the ${escapeHtml(meta.label)} map · ` : '';
   const mapsUrl = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(place.name+' Venetian Las Vegas');
   const hint = PlacesEngine.formatHint(PlacesEngine.walkBetween(origin||loc, loc), {stepFree:place.stepFree});
   return `<div class="lvlmap">
     <div class="lvlmap-h">${escapeHtml(place.name)} — ${escapeHtml(meta.label)}${tag} ⤢</div>
     <svg viewBox="0 0 100 100" width="100%">
       <image href="${meta.img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>
-      ${route}${originPin}
-      <circle cx="${cx}" cy="${cy}" r="5.2" fill="#e8463c" stroke="#fff" stroke-width="1.1"/>
-      <text x="${cx}" y="${(parseFloat(cy)+1.7).toFixed(1)}" text-anchor="middle" font-size="5" fill="#fff" font-weight="700">●</text>
+      ${route}${originPin}${destPin}
     </svg>
-    <div class="lvlmap-key">🚶 ${escapeHtml(hint)} · <a href="${mapsUrl}" target="_blank" rel="noopener">Open in Maps ↗</a>${sameMap?' · ○ you · ● destination':''}</div>
+    <div class="lvlmap-key">${findNote}🚶 ${escapeHtml(hint)} · <a href="${mapsUrl}" target="_blank" rel="noopener">Open in Maps ↗</a>${(placed&&sameMap)?' · ○ you · ● destination':''}</div>
   </div>`;
 }
 function openPlaceMap(id){
@@ -928,10 +934,11 @@ function renderFood(){
     const open=PlacesEngine.isOpenNow(p, now);
     const badge=open===true?'<span class="open">Open</span>':open===false?'<span class="closed">Closed</span>':'';
     const hint=PlacesEngine.formatHint(p._walk, {stepFree:p.stepFree});
-    const approx=p.placed?'':' <span class="approx">approx. area</span>';
+    const numtag=p.num?` · <span class="pnum">#${escapeHtml(p.num)}</span>`:'';
+    const approx=p.placed?'':' <span class="approx">on map</span>';
     return `<div class="foodrow" data-id="${escapeAttr(p.id)}">
       <div class="fr-main"><b>${escapeHtml(p.name)}</b> ${badge}
-        <div class="fr-sub">${escapeHtml(p.area)}${p.price?' · '+escapeHtml(p.price):''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
+        <div class="fr-sub">${escapeHtml(p.area)}${numtag}${p.price?' · '+escapeHtml(p.price):''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
         <div class="fr-hint">🚶 ${escapeHtml(hint)}</div>
         ${p.note?`<div class="fr-note">${escapeHtml(p.note)}</div>`:''}
       </div>

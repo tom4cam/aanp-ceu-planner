@@ -1,334 +1,19 @@
-window.PLACES = [
-{
-"id": "sbux-expo2",
-"name": "Starbucks (Convention Center)",
-"cat": "coffee",
-"sub": "Coffee",
-"area": "Expo",
-"num": "103",
-"placed": true,
-"map": "expo2",
-"x": 0.78,
-"y": 0.55,
-"price": "$",
-"hours": "6a–6p",
-"open": [
-360,
-1080
-],
-"stepFree": true,
-"note": "Closest coffee to the Expo halls (#103, Venetian Convention Center)."
-},
-{
-"id": "restroom-expo2",
-"name": "Restrooms — Expo Upper Lobby",
-"cat": "restroom",
-"sub": "Restroom",
-"area": "Expo",
-"placed": true,
-"map": "expo2",
-"x": 0.82,
-"y": 0.63,
-"hours": "—",
-"stepFree": true
-},
-{
-"id": "grandlux-prop1",
-"name": "Grand Lux Cafe",
-"cat": "sitdown",
-"sub": "American",
-"area": "Venetian Level 1",
-"num": "108",
-"placed": true,
-"map": "prop1",
-"x": 0.55,
-"y": 0.45,
-"price": "$$",
-"hours": "7a–11p",
-"open": [
-420,
-1380
-],
-"stepFree": true,
-"note": "Reliable sit-down, broad menu, near the casino floor (#108)."
-},
-{
-"id": "bouchon-prop1",
-"name": "Bouchon Bakery",
-"cat": "coffee",
-"sub": "Bakery/Coffee",
-"area": "Venetian Level 1",
-"num": "111",
-"placed": true,
-"map": "prop1",
-"x": 0.6,
-"y": 0.35,
-"price": "$$",
-"hours": "7a–6p",
-"open": [
-420,
-1080
-],
-"stepFree": true,
-"note": "Pastries + espresso; quick grab (#111)."
-},
-{
-"id": "yardbird-prop1",
-"name": "Yardbird Southern Table & Bar",
-"cat": "sitdown",
-"sub": "Southern",
-"area": "Venetian Level 1",
-"num": "133",
-"placed": true,
-"map": "prop1",
-"x": 0.5,
-"y": 0.55,
-"price": "$$",
-"hours": "11a–10p",
-"open": [
-660,
-1320
-],
-"stepFree": true,
-"note": "Southern comfort food (#133)."
-},
-{
-"id": "mott32-prop1",
-"name": "Mott 32",
-"cat": "sitdown",
-"sub": "Chinese",
-"area": "Palazzo",
-"num": "152",
-"placed": true,
-"map": "prop1",
-"x": 0.72,
-"y": 0.4,
-"price": "$$$",
-"hours": "5p–11p",
-"open": [
-1020,
-1380
-],
-"stepFree": true,
-"note": "Dinner only; reservations recommended (#152)."
-},
-{
-"id": "walgreens-prop1",
-"name": "Walgreens",
-"cat": "essentials",
-"sub": "Pharmacy/Sundries",
-"area": "Casino",
-"num": "128",
-"placed": true,
-"map": "prop1",
-"x": 0.3,
-"y": 0.78,
-"price": "$",
-"hours": "Open 24h",
-"open": [
-0,
-1440
-],
-"stepFree": true,
-"note": "Meds, snacks, water, blister care (#128)."
-},
-{
-"id": "blacktap-prop1",
-"name": "Black Tap Craft Burgers",
-"cat": "food",
-"sub": "Burgers",
-"area": "Venetian Level 1",
-"num": "125",
-"placed": true,
-"map": "prop1",
-"x": 0.62,
-"y": 0.56,
-"price": "$$",
-"hours": "11a–11p",
-"open": [
-660,
-1380
-],
-"stepFree": true,
-"note": "Burgers + crazy shakes (#125)."
-},
-{
-"id": "sugarcane-prop1",
-"name": "Sugarcane Raw Bar Grill",
-"cat": "sitdown",
-"sub": "Small plates",
-"area": "Venetian Level 1",
-"num": "105",
-"placed": true,
-"map": "prop1",
-"x": 0.48,
-"y": 0.5,
-"price": "$$",
-"hours": "11:30a–11p",
-"open": [
-690,
-1380
-],
-"stepFree": true,
-"note": "Shareable small plates (#105, Level 1)."
-},
-{
-"id": "buddyv-prop2",
-"name": "Buddy V's Ristorante",
-"cat": "sitdown",
-"sub": "Italian",
-"area": "Grand Canal Shoppes",
-"num": "290",
-"placed": true,
-"map": "prop2",
-"x": 0.45,
-"y": 0.45,
-"price": "$$",
-"hours": "11a–10p",
-"open": [
-660,
-1320
-],
-"stepFree": true,
-"note": "Buddy Valastro's Italian (#290)."
-},
-{
-"id": "canonita-prop2",
-"name": "Cañonita",
-"cat": "sitdown",
-"sub": "Mexican",
-"area": "Grand Canal Shoppes",
-"num": "219",
-"placed": true,
-"map": "prop2",
-"x": 0.62,
-"y": 0.5,
-"price": "$$",
-"hours": "11a–10p",
-"open": [
-660,
-1320
-],
-"stepFree": true,
-"note": "Canal-side patio seating (#219)."
-},
-{
-"id": "grimaldis-prop2",
-"name": "Grimaldi's Pizzeria",
-"cat": "food",
-"sub": "Pizza",
-"area": "Grand Canal Shoppes",
-"num": "321",
-"placed": true,
-"map": "prop2",
-"x": 0.5,
-"y": 0.3,
-"price": "$$",
-"hours": "11a–11p",
-"open": [
-660,
-1380
-],
-"stepFree": true,
-"note": "Coal-fired pizza (#321)."
-},
-{
-"id": "tao-prop2",
-"name": "TAO Asian Bistro",
-"cat": "sitdown",
-"sub": "Asian",
-"area": "Grand Canal Shoppes",
-"num": "252",
-"placed": true,
-"map": "prop2",
-"x": 0.4,
-"y": 0.35,
-"price": "$$$",
-"hours": "5p–12a",
-"open": [
-1020,
-1440
-],
-"stepFree": true,
-"note": "Dinner; lively/loud (#252)."
-},
-{
-"id": "coffeebean-prop2",
-"name": "The Coffee Bean & Tea Leaf",
-"cat": "coffee",
-"sub": "Coffee",
-"area": "Grand Canal Shoppes",
-"num": "250/234",
-"placed": true,
-"map": "prop2",
-"x": 0.48,
-"y": 0.55,
-"price": "$",
-"hours": "6a–9p",
-"open": [
-360,
-1260
-],
-"stepFree": true,
-"note": "Coffee/tea on the Shoppes level (#250)."
-},
-{
-"id": "bananarep-prop2",
-"name": "Banana Republic",
-"cat": "shop",
-"sub": "Apparel",
-"area": "Grand Canal Shoppes",
-"num": "237",
-"placed": true,
-"map": "prop2",
-"x": 0.58,
-"y": 0.62,
-"price": "$$",
-"hours": "10a–11p",
-"open": [
-600,
-1380
-],
-"stepFree": true
-},
-{
-"id": "coach-prop2",
-"name": "Coach",
-"cat": "shop",
-"sub": "Leather goods",
-"area": "Grand Canal Shoppes",
-"num": "332",
-"placed": true,
-"map": "prop2",
-"x": 0.66,
-"y": 0.58,
-"price": "$$$",
-"hours": "10a–11p",
-"open": [
-600,
-1380
-],
-"stepFree": true
-},
-{
-"id": "restroom-prop2",
-"name": "Restrooms — Grand Canal Shoppes",
-"cat": "restroom",
-"sub": "Restroom",
-"area": "Grand Canal Shoppes",
-"placed": true,
-"map": "prop2",
-"x": 0.52,
-"y": 0.72,
-"hours": "—",
-"stepFree": true
-},
+[
 {
 "id": "bazaar-meat-by-jos-andr-s-L1",
 "name": "Bazaar Meat® by José Andrés",
 "cat": "sitdown",
 "area": "Venetian Level 1",
 "num": "124",
+"level": 1,
+"placed": false
+},
+{
+"id": "black-tap-craft-burgers-beer-L1",
+"name": "Black Tap Craft Burgers & Beer",
+"cat": "sitdown",
+"area": "Venetian Level 1",
+"num": "125",
 "level": 1,
 "placed": false
 },
@@ -405,6 +90,15 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "grand-lux-cafe-the-venetian-L1",
+"name": "Grand Lux Cafe, The Venetian",
+"cat": "sitdown",
+"area": "Venetian Level 1",
+"num": "108",
+"level": 1,
+"placed": false
+},
+{
 "id": "hasalon-L1",
 "name": "HaSalon",
 "cat": "sitdown",
@@ -441,6 +135,15 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "mott-32-L1",
+"name": "Mott 32",
+"cat": "sitdown",
+"area": "Venetian Level 1",
+"num": "152",
+"level": 1,
+"placed": false
+},
+{
 "id": "nomikai-L1",
 "name": "Nomikai",
 "cat": "sitdown",
@@ -459,11 +162,29 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "sugarcane-raw-bar-grill-L1",
+"name": "Sugarcane Raw Bar Grill",
+"cat": "sitdown",
+"area": "Venetian Level 1",
+"num": "105",
+"level": 1,
+"placed": false
+},
+{
 "id": "wakuda-L1",
 "name": "Wakuda",
 "cat": "sitdown",
 "area": "Venetian Level 1",
 "num": "148",
+"level": 1,
+"placed": false
+},
+{
+"id": "yardbird-L1",
+"name": "Yardbird",
+"cat": "sitdown",
+"area": "Venetian Level 1",
+"num": "133",
 "level": 1,
 "placed": false
 },
@@ -549,6 +270,15 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "bouchon-bakery-L1",
+"name": "Bouchon Bakery",
+"cat": "coffee",
+"area": "Venetian Level 1",
+"num": "111",
+"level": 1,
+"placed": false
+},
+{
 "id": "donutique-L1",
 "name": "Donutique",
 "cat": "coffee",
@@ -590,6 +320,15 @@ window.PLACES = [
 "cat": "coffee",
 "area": "Venetian Level 1",
 "num": "156",
+"level": 1,
+"placed": false
+},
+{
+"id": "starbucks-the-venetian-convention-center-L1",
+"name": "Starbucks, The Venetian Convention Center",
+"cat": "coffee",
+"area": "Venetian Level 1",
+"num": "103",
 "level": 1,
 "placed": false
 },
@@ -757,6 +496,15 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "walgreens-L1",
+"name": "Walgreens",
+"cat": "shop",
+"area": "Venetian Level 1",
+"num": "128",
+"level": 1,
+"placed": false
+},
+{
 "id": "boa-steakhouse-L2",
 "name": "BOA Steakhouse",
 "cat": "sitdown",
@@ -775,6 +523,15 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "buddy-v-s-ristorante-L2",
+"name": "Buddy V's Ristorante",
+"cat": "sitdown",
+"area": "Grand Canal Shoppes",
+"num": "290",
+"level": 2,
+"placed": false
+},
+{
 "id": "canaletto-L2",
 "name": "Canaletto",
 "cat": "sitdown",
@@ -784,11 +541,29 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "ca-onita-L2",
+"name": "Cañonita",
+"cat": "sitdown",
+"area": "Grand Canal Shoppes",
+"num": "219",
+"level": 2,
+"placed": false
+},
+{
 "id": "fogo-de-ch-o-L2",
 "name": "Fogo de Chão",
 "cat": "sitdown",
 "area": "Grand Canal Shoppes",
 "num": "261",
+"level": 2,
+"placed": false
+},
+{
+"id": "grimaldi-s-pizzeria-L2",
+"name": "Grimaldi‘s Pizzeria",
+"cat": "sitdown",
+"area": "Grand Canal Shoppes",
+"num": "321",
 "level": 2,
 "placed": false
 },
@@ -834,6 +609,15 @@ window.PLACES = [
 "cat": "sitdown",
 "area": "Grand Canal Shoppes",
 "num": "323",
+"level": 2,
+"placed": false
+},
+{
+"id": "tao-asian-bistro-nightclub-L2",
+"name": "Tao Asian Bistro & Nightclub",
+"cat": "sitdown",
+"area": "Grand Canal Shoppes",
+"num": "252",
 "level": 2,
 "placed": false
 },
@@ -946,6 +730,15 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "the-coffee-bean-tea-leaf-L2",
+"name": "The Coffee Bean & Tea Leaf",
+"cat": "coffee",
+"area": "Grand Canal Shoppes",
+"num": "250/234",
+"level": 2,
+"placed": false
+},
+{
 "id": "food-court-L2",
 "name": "Food Court",
 "cat": "food",
@@ -1037,6 +830,15 @@ window.PLACES = [
 "placed": false
 },
 {
+"id": "banana-republic-L2",
+"name": "Banana Republic",
+"cat": "shop",
+"area": "Grand Canal Shoppes",
+"num": "237",
+"level": 2,
+"placed": false
+},
+{
 "id": "bauman-rare-books-L2",
 "name": "Bauman Rare Books",
 "cat": "shop",
@@ -1105,6 +907,15 @@ window.PLACES = [
 "cat": "shop",
 "area": "Grand Canal Shoppes",
 "num": "242",
+"level": 2,
+"placed": false
+},
+{
+"id": "coach-L2",
+"name": "Coach",
+"cat": "shop",
+"area": "Grand Canal Shoppes",
+"num": "332",
 "level": 2,
 "placed": false
 },
@@ -1621,4 +1432,4 @@ window.PLACES = [
 "level": 2,
 "placed": false
 }
-];
+]
