@@ -318,6 +318,8 @@ main{padding:12px var(--gut) 80px}
 
 <script src="data.js?v=2026-06-21.14"></script>
 <script src="details.js?v=2026-06-21.14"></script>
+<script src="places-engine.js?v=2026-06-21.14"></script>
+<script src="places.js?v=2026-06-21.14"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -742,7 +744,8 @@ function closerAlternatives(anchorRoom, s, maxN){
     .sort((a,b)=>a.dist.d-b.dist.d).slice(0,maxN);
 }
 /* per-day floor map: real venue floorplan with your room pins overlaid */
-const LVL_IMG={2:'floorplans/level2.jpg',3:'floorplans/level3.jpg',4:'floorplans/level4.jpg',5:'floorplans/level5.jpg'};
+// Expo floor images now come from the shared PlacesEngine.MAP_META registry.
+const LVL_IMG={2:PlacesEngine.MAP_META.expo2.img,3:PlacesEngine.MAP_META.expo3.img,4:PlacesEngine.MAP_META.expo4.img,5:PlacesEngine.MAP_META.expo5.img};
 function dayMapHTML(daySessions){
   const pts=daySessions.map((s,i)=>({n:i+1,g:geoOf(roomOf(s)),room:roomOf(s)})).filter(p=>p.g);
   if(pts.length<2) return '';
