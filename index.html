@@ -272,6 +272,19 @@ main{padding:12px var(--gut) 80px}
   a[href]:after{content:""}
 }
 .print-on{display:none}
+.foodbar{padding:8px var(--gut)}
+.foodbar input[type=search]{width:100%;padding:9px 11px;font-size:15px;border:1px solid #d4d8e0;border-radius:10px;margin:8px 0}
+.foodchips{display:flex;flex-wrap:wrap;gap:6px}
+.foodchip{border:1px solid #cdd3dd;background:#fff;border-radius:16px;padding:5px 10px;font-size:12.5px}
+.foodchip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.foodrow{display:flex;align-items:center;gap:10px;padding:11px var(--gut);border-bottom:1px solid #eef1f5}
+.fr-main{flex:1}.fr-sub{color:#5a6472;font-size:13px;margin-top:2px}
+.fr-hint{font-size:13px;margin-top:3px}.fr-note{font-size:12.5px;color:#6b7280;margin-top:3px;font-style:italic}
+.fr-map{flex:0 0 auto;border:1px solid var(--brand);color:var(--brand);background:#fff;border-radius:8px;padding:7px 10px;font-size:13px}
+.foodrow .open{color:#1a8a4a;font-size:12px;font-weight:600}.foodrow .closed{color:#b23;font-size:12px}
+.fr-sub .approx{color:#a06a00;font-size:11.5px}
+.foodlist .empty{padding:20px var(--gut);color:#6b7280}
+.origin-label{color:#5a6472;font-size:13px}
 </style>
 </head>
 <body>
@@ -294,6 +307,7 @@ main{padding:12px var(--gut) 80px}
   <button data-tab="browse" class="on">Browse</button>
   <button data-tab="plan">My Plan</button>
   <button data-tab="live">My Map</button>
+  <button data-tab="food">🍽️ Food &amp; Shops</button>
   <button data-tab="notes">My Notes</button>
   <button data-tab="dash">CEUs</button>
   <button data-tab="rec">Watch Later</button>
@@ -305,6 +319,7 @@ main{padding:12px var(--gut) 80px}
 <main>
   <section class="view" id="view-browse"></section>
   <section class="view" id="view-live"></section>
+  <section class="view" id="view-food" style="display:none"><div id="foodBody"></div></section>
   <section class="view" id="view-rec"></section>
   <section class="view" id="view-dash"></section>
   <section class="view print-on" id="view-plan"></section>
@@ -798,6 +813,75 @@ function cardLiveHTML(s,isConf,num){
       <button class="recflip" data-drop="${s.id}">remove</button>
     </div>
   </div>`;
+}
+
+/* ---------- Food & Shops ---------- */
+function nextSessionLoc(){
+  // earliest live pick (by day+start) whose end hasn't passed; falls back to first live pick.
+  const live = (window.DATA||[]).filter(s=>state.picks[s.id]==='live');
+  if(!live.length) return null;
+  live.sort((a,b)=> (a.day||'').localeCompare(b.day||'') || (a.start||'').localeCompare(b.start||''));
+  const s = live[0];
+  const g = geoOf(roomOf(s)); if(!g) return null;
+  return {mapId:'expo'+g.lvl, x:g.x, y:g.y, label:'next session ('+(s.code||s.title||'')+')'};
+}
+function foodOrigin(){
+  const mode = state.foodOrigin || 'next';
+  if(mode==='home'){ const h=homeLoc(); return {mapId:'expo'+h.lvl, x:h.x, y:h.y, label:homeName()}; }
+  const n = nextSessionLoc();
+  if(n) return n;
+  const h=homeLoc(); return {mapId:'expo'+h.lvl, x:h.x, y:h.y, label:homeName()}; // fallback
+}
+function foodNow(){
+  const d=new Date();
+  return {day:d.getDay(), minutes:d.getHours()*60+d.getMinutes()};
+}
+const FOOD_CATS=[['coffee','☕ Coffee'],['food','🍔 Food'],['sitdown','🍽️ Sit-down'],['essentials','🧴 Essentials'],['restroom','🚻 Restrooms'],['shop','🛍️ Shops']];
+function renderFood(){
+  const body=document.getElementById('foodBody'); if(!body) return;
+  const f=state.foodFilters||(state.foodFilters={cats:[],openNow:false,stepFree:false,q:''});
+  const origin=foodOrigin(), now=foodNow();
+  const filtered=PlacesEngine.filterPlaces(window.PLACES||[], {q:f.q,cats:f.cats,openNow:f.openNow,stepFree:f.stepFree,now});
+  const sorted=PlacesEngine.sortByWalk(filtered, origin);
+  const chip=(key,label,on)=>`<button class="foodchip${on?' on':''}" data-cat="${key}">${label}</button>`;
+  const rows=sorted.map(p=>{
+    const open=PlacesEngine.isOpenNow(p, now);
+    const badge=open===true?'<span class="open">Open</span>':open===false?'<span class="closed">Closed</span>':'';
+    const hint=PlacesEngine.formatHint(p._walk, {stepFree:p.stepFree});
+    const approx=p.placed?'':' <span class="approx">approx. area</span>';
+    return `<div class="foodrow" data-id="${escapeAttr(p.id)}">
+      <div class="fr-main"><b>${escapeHtml(p.name)}</b> ${badge}
+        <div class="fr-sub">${escapeHtml(p.area)}${p.price?' · '+p.price:''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
+        <div class="fr-hint">🚶 ${escapeHtml(hint)}</div>
+        ${p.note?`<div class="fr-note">${escapeHtml(p.note)}</div>`:''}
+      </div>
+      <button class="fr-map" data-id="${escapeAttr(p.id)}">Map ›</button>
+    </div>`;
+  }).join('');
+  body.innerHTML=`
+    <div class="foodbar">
+      <div class="foodorigin">From: <select id="foodOriginSel">
+        <option value="next"${(state.foodOrigin||'next')==='next'?' selected':''}>my next session</option>
+        <option value="home"${state.foodOrigin==='home'?' selected':''}>my Palazzo suite</option>
+      </select> <span class="origin-label">→ ${escapeHtml(origin.label)}</span></div>
+      <input id="foodSearch" type="search" placeholder="Search shops &amp; restaurants…" value="${escapeAttr(f.q)}">
+      <div class="foodchips">${FOOD_CATS.map(c=>chip(c[0],c[1],f.cats.includes(c[0]))).join('')}
+        ${chip('__open','🕒 Open now',f.openNow)}${chip('__step','♿ Step-free',f.stepFree)}</div>
+    </div>
+    <div class="foodlist">${rows||'<p class="empty">No places match those filters.</p>'}</div>`;
+  bindFood();
+}
+function bindFood(){
+  const sel=document.getElementById('foodOriginSel'); if(sel) sel.onchange=()=>{ state.foodOrigin=sel.value; save(); renderFood(); };
+  const q=document.getElementById('foodSearch'); if(q) q.oninput=()=>{ state.foodFilters.q=q.value; save(); renderFood(); };
+  document.querySelectorAll('.foodchip').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.cat, f=state.foodFilters;
+    if(k==='__open') f.openNow=!f.openNow;
+    else if(k==='__step') f.stepFree=!f.stepFree;
+    else { const i=f.cats.indexOf(k); if(i>=0) f.cats.splice(i,1); else f.cats.push(k); }
+    save(); renderFood();
+  });
+  document.querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
 }
 
 /* ====================================================================== */
@@ -1301,6 +1385,7 @@ function renderActive(){
   else if(activeTab==='plan') renderPlan();
   else if(activeTab==='notes') renderNotes();
   else if(activeTab==='help') renderHelp();
+  else if(activeTab==='food') renderFood();
 }
 function show(tab){
   activeTab=tab;
