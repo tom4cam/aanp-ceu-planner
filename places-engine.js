@@ -49,7 +49,37 @@
     return { minutes, sameMap, zoneChange, far: minutes > FAR_MIN, from: a.mapId, to: b.mapId };
   }
 
-  const API = { MAP_META, ZONES, ZONE_LABEL, zoneOf, walkBetween };
+  function formatHint(result, opts){
+    opts = opts || {};
+    const mins = `~${result.minutes} min`;
+    let where;
+    if (result.sameMap){
+      where = MAP_META[result.from] ? MAP_META[result.from].label : '';
+    } else if (zoneOf(result.from) === zoneOf(result.to)){
+      const fl = MAP_META[result.from] ? MAP_META[result.from].label : '';
+      const tl = MAP_META[result.to] ? MAP_META[result.to].label : '';
+      where = `${fl} → ${tl} (elevator)`;
+    } else {
+      const fl = MAP_META[result.from] ? MAP_META[result.from].label : ZONE_LABEL[zoneOf(result.from)] || '';
+      const tl = MAP_META[result.to] ? MAP_META[result.to].label : ZONE_LABEL[zoneOf(result.to)] || '';
+      where = `${fl} → ${tl}`;
+    }
+    let s = `${mins} · ${where}`;
+    if (opts.stepFree) s += ' · step-free';
+    return s;
+  }
+
+  function isOpenNow(place, now){
+    if (!place || !place.open) return null;
+    let span = place.open;
+    if (!Array.isArray(span)) span = span[String(now.day)];
+    if (!span || span.length !== 2) return null;
+    const [o, c] = span;
+    if (o === c) return false; // closed all day
+    return now.minutes >= o && now.minutes < c;
+  }
+
+  const API = { MAP_META, ZONES, ZONE_LABEL, zoneOf, walkBetween, formatHint, isOpenNow };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.PlacesEngine = API;
 })(typeof window !== 'undefined' ? window : globalThis);

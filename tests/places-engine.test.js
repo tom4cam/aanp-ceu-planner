@@ -35,3 +35,26 @@ test('walkBetween across zones uses ZONES graph and flags far', () => {
   assert.ok(r.minutes >= E.ZONES.expo.property, `got ${r.minutes}`);
   assert.equal(r.far, true);
 });
+
+test('formatHint same map mentions the map label and step-free', () => {
+  const r = E.walkBetween({mapId:'expo3',x:0.2,y:0.2},{mapId:'expo3',x:0.3,y:0.3});
+  const s = E.formatHint(r, {stepFree:true});
+  assert.match(s, /~\d+ min/);
+  assert.match(s, /Expo Level 3/);
+  assert.match(s, /step-free/);
+});
+
+test('formatHint across zones shows from -> to zone labels', () => {
+  const r = E.walkBetween({mapId:'expo2',x:0.5,y:0.5},{mapId:'prop2',x:0.5,y:0.5});
+  const s = E.formatHint(r, {});
+  assert.match(s, /Expo/);
+  assert.match(s, /Grand Canal Shoppes/);
+  assert.match(s, /→/);
+});
+
+test('isOpenNow handles daily array, per-day object, and missing', () => {
+  assert.equal(E.isOpenNow({open:[600, 1320]}, {day:3, minutes:700}), true);   // 10:00–22:00, now 11:40
+  assert.equal(E.isOpenNow({open:[600, 1320]}, {day:3, minutes:1380}), false);  // 23:00
+  assert.equal(E.isOpenNow({open:{'3':[600,1320],'0':[0,0]}}, {day:0, minutes:700}), false); // closed Sun
+  assert.equal(E.isOpenNow({}, {day:3, minutes:700}), null);
+});
