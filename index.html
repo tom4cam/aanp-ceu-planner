@@ -349,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.9"></script>
-<script src="details.js?v=2026-06-27.9"></script>
-<script src="places-engine.js?v=2026-06-27.9"></script>
-<script src="places.js?v=2026-06-27.9"></script>
-<script src="evalmap.js?v=2026-06-27.9"></script>
+<script src="data.js?v=2026-06-27.10"></script>
+<script src="details.js?v=2026-06-27.10"></script>
+<script src="places-engine.js?v=2026-06-27.10"></script>
+<script src="places.js?v=2026-06-27.10"></script>
+<script src="evalmap.js?v=2026-06-27.10"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -430,6 +430,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
+const APP_VER = '2026-06-27.10';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -701,6 +702,7 @@ function renderLive(){
     html+=`<div class="slot ${isConf?'conflict':''}">`+cardLiveHTML(s,isConf,dayNum)+`</div>`;
     prev=s;
   }
+  html+=fullMapsHTML();
   el.innerHTML=html;
   el.querySelectorAll('[data-room]').forEach(rm=>{
     rm.addEventListener('input',e=>{ const v=e.target.value; if(v) state.rooms[rm.dataset.room]=v; else delete state.rooms[rm.dataset.room]; save(); });
@@ -829,7 +831,7 @@ function dayMapHTML(daySessions){
   const boxes=levels.map(lv=>{
     const lp=pts.filter(p=>p.g.lvl===lv).sort((a,b)=>a.n-b.n);
     const img=LVL_IMG[lv];
-    const bg=img?`<image href="${img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>`:'';
+    const bg=img?`<image href="${img}?v=${APP_VER}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>`:'';
     // home-base pin: the Palazzo entrance, drawn on the Expo level with a line to the first room there
     let homeMark='', homeKey='';
     const H=homeLoc();
@@ -886,7 +888,7 @@ function placeMapHTML(place, origin){
   return `<div class="lvlmap">
     <div class="lvlmap-h">${escapeHtml(place.name)} — ${escapeHtml(meta.label)}${tag} ⤢</div>
     <svg viewBox="0 0 100 100" width="100%">
-      <image href="${meta.img}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>
+      <image href="${meta.img}?v=${APP_VER}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>
       ${route}${originPin}${destPin}
     </svg>
     <div class="lvlmap-key">${findNote}🚶 ${escapeHtml(hint)} · <a href="${mapsUrl}" target="_blank" rel="noopener">Open in Maps ↗</a>${(placed&&sameMap)?' · ○ you · ● destination':''}</div>
@@ -898,6 +900,17 @@ function openPlaceMap(id){
   if(!html){ toast('No map for this spot'); return; }
   const wrap=document.createElement('div'); wrap.innerHTML=html;
   openMapModal(wrap.querySelector('.lvlmap'));
+}
+/* The full hi-res property maps (every restaurant & shop is numbered) — shown at the
+   bottom of My Map and Food & Shops, tappable to fullscreen pinch-zoom. */
+function fullMapsHTML(){
+  const maps=[['prop1','Venetian / Palazzo — Level 1'],['prop2','Grand Canal Shoppes — Level 2']];
+  return `<div class="day-head" style="margin-top:18px">🗺️ Full venue map</div>`+
+    `<div class="note no-print" style="margin:0 4px 8px">Tap to zoom. Every restaurant & shop is numbered — find a place's <b>#</b> in the list, then spot it here.</div>`+
+    maps.map(([id,label])=>{ const m=PlacesEngine.MAP_META[id];
+      return `<div class="lvlmap"><div class="lvlmap-h">${escapeHtml(label)} ⤢</div>`+
+        `<svg viewBox="0 0 100 100" width="100%"><image href="${m.img}?v=${APP_VER}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/></svg></div>`;
+    }).join('');
 }
 function cardLiveHTML(s,isConf,num){
   return `<div class="scard is-live" data-id="${s.id}">
@@ -972,7 +985,8 @@ function renderFood(){
       <div class="foodchips">${FOOD_CATS.map(c=>chip(c[0],c[1],f.cats.includes(c[0]))).join('')}
         ${chip('__open','🕒 Open now',f.openNow)}${chip('__step','♿ Step-free',f.stepFree)}</div>
     </div>
-    <div class="foodlist">${rows||'<p class="empty">No places match those filters.</p>'}</div>`;
+    <div class="foodlist">${rows||'<p class="empty">No places match those filters.</p>'}</div>
+    ${fullMapsHTML()}`;
   bindFood();
 }
 function bindFood(){
@@ -986,6 +1000,7 @@ function bindFood(){
     save(); renderFood();
   });
   document.querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
+  document.querySelectorAll('#view-food .lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
 }
 
 /* ====================================================================== */
