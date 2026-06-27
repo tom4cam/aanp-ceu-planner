@@ -349,11 +349,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.14"></script>
-<script src="details.js?v=2026-06-27.14"></script>
-<script src="places-engine.js?v=2026-06-27.14"></script>
-<script src="places.js?v=2026-06-27.14"></script>
-<script src="evalmap.js?v=2026-06-27.14"></script>
+<script src="data.js?v=2026-06-27.15"></script>
+<script src="details.js?v=2026-06-27.15"></script>
+<script src="places-engine.js?v=2026-06-27.15"></script>
+<script src="places.js?v=2026-06-27.15"></script>
+<script src="evalmap.js?v=2026-06-27.15"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -430,7 +430,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.14';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.15';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -989,8 +989,8 @@ function foodNow(){
 const FOOD_CATS=[['restroom','🚻 Restrooms'],['coffee','☕ Coffee'],['food','🍔 Food'],['sitdown','🍽️ Sit-down'],['essentials','🧴 Essentials'],['shop','🛍️ Shops']];
 function renderFood(){
   const body=document.getElementById('foodBody'); if(!body) return;
-  const f=state.foodFilters||(state.foodFilters={cats:['restroom'],openNow:false,stepFree:false,q:''});
-  if(f._d!==1){ f.cats=['restroom']; f._d=1; save(); }  // one-time: default the filter to Restrooms
+  const f=state.foodFilters||(state.foodFilters={cats:['restroom','food','shop'],openNow:false,stepFree:false,q:''});
+  if(f._d!==2){ f.cats=['restroom','food','shop']; f._d=2; save(); }  // one-time: default to Restrooms + Food + Shops
   const origin=foodOrigin(), now=foodNow();
   const filtered=PlacesEngine.filterPlaces(window.PLACES||[], {q:f.q,cats:f.cats,openNow:f.openNow,stepFree:f.stepFree,now});
   const sorted=PlacesEngine.sortByWalk(filtered, origin);
