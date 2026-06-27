@@ -204,10 +204,10 @@ test('formatHint same map mentions the map label and step-free', () => {
 });
 
 test('formatHint across zones shows from -> to zone labels', () => {
-  const r = E.walkBetween({mapId:'expo2',x:0.5,y:0.5},{mapId:'gcs',x:0.5,y:0.5});
+  const r = E.walkBetween({mapId:'expo2',x:0.5,y:0.5},{mapId:'prop2',x:0.5,y:0.5});
   const s = E.formatHint(r, {});
   assert.match(s, /Expo/);
-  assert.match(s, /Grand Canal Shoppes/);
+  assert.match(s, /Venetian\/Palazzo/);
   assert.match(s, /→/);
 });
 
