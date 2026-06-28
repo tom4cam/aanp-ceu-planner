@@ -352,11 +352,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.17"></script>
-<script src="details.js?v=2026-06-27.17"></script>
-<script src="places-engine.js?v=2026-06-27.17"></script>
-<script src="places.js?v=2026-06-27.17"></script>
-<script src="evalmap.js?v=2026-06-27.17"></script>
+<script src="data.js?v=2026-06-27.18"></script>
+<script src="details.js?v=2026-06-27.18"></script>
+<script src="places-engine.js?v=2026-06-27.18"></script>
+<script src="places.js?v=2026-06-27.18"></script>
+<script src="evalmap.js?v=2026-06-27.18"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -433,7 +433,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.17';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.18';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -993,14 +993,11 @@ function foodNow(){
   return {day:d.getDay(), minutes:d.getHours()*60+d.getMinutes()};
 }
 const FOOD_CATS=[['restroom','🚻 Restrooms'],['coffee','☕ Coffee'],['food','🍔 Food'],['sitdown','🍽️ Sit-down'],['essentials','🧴 Essentials'],['shop','🛍️ Shops']];
-function renderFood(){
-  const body=document.getElementById('foodBody'); if(!body) return;
-  const f=state.foodFilters||(state.foodFilters={cats:['restroom','food','shop'],openNow:false,stepFree:false,q:''});
-  if(f._d!==2){ f.cats=['restroom','food','shop']; f._d=2; save(); }  // one-time: default to Restrooms + Food + Shops
+function foodListInner(){
+  const f=state.foodFilters||{cats:[],openNow:false,stepFree:false,q:''};
   const origin=foodOrigin(), now=foodNow();
   const filtered=PlacesEngine.filterPlaces(window.PLACES||[], {q:f.q,cats:f.cats,openNow:f.openNow,stepFree:f.stepFree,now});
   const sorted=PlacesEngine.sortByWalk(filtered, origin);
-  const chip=(key,label,on)=>`<button class="foodchip${on?' on':''}" data-cat="${key}">${label}</button>`;
   const rows=sorted.map(p=>{
     const open=PlacesEngine.isOpenNow(p, now);
     const badge=open===true?'<span class="open">Open</span>':open===false?'<span class="closed">Closed</span>':'';
@@ -1016,6 +1013,19 @@ function renderFood(){
       <button class="fr-map" data-id="${escapeAttr(p.id)}">Map ›</button>
     </div>`;
   }).join('');
+  return rows||'<p class="empty">No places match those filters.</p>';
+}
+function refreshFoodList(){ // update only the results list (keeps the search box focused)
+  const fl=document.querySelector('#view-food .foodlist'); if(!fl) return;
+  fl.innerHTML=foodListInner();
+  fl.querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
+}
+function renderFood(){
+  const body=document.getElementById('foodBody'); if(!body) return;
+  const f=state.foodFilters||(state.foodFilters={cats:['restroom','food','shop'],openNow:false,stepFree:false,q:''});
+  if(f._d!==2){ f.cats=['restroom','food','shop']; f._d=2; save(); }  // one-time: default to Restrooms + Food + Shops
+  const origin=foodOrigin();
+  const chip=(key,label,on)=>`<button class="foodchip${on?' on':''}" data-cat="${key}">${label}</button>`;
   body.innerHTML=`
     <div class="foodbar">
       <div class="foodorigin">From: <select id="foodOriginSel">
@@ -1027,12 +1037,12 @@ function renderFood(){
         ${chip('__open','🕒 Open now',f.openNow)}${chip('__step','♿ Step-free',f.stepFree)}</div>
     </div>
     ${fullMapsHTML()}
-    <div class="foodlist">${rows||'<p class="empty">No places match those filters.</p>'}</div>`;
+    <div class="foodlist">${foodListInner()}</div>`;
   bindFood();
 }
 function bindFood(){
   const sel=document.getElementById('foodOriginSel'); if(sel) sel.onchange=()=>{ state.foodOrigin=sel.value; save(); renderFood(); };
-  const q=document.getElementById('foodSearch'); if(q) q.oninput=()=>{ state.foodFilters.q=q.value; save(); renderFood(); };
+  const q=document.getElementById('foodSearch'); if(q) q.oninput=()=>{ state.foodFilters.q=q.value; save(); refreshFoodList(); };
   document.querySelectorAll('.foodchip').forEach(b=>b.onclick=()=>{
     const k=b.dataset.cat, f=state.foodFilters;
     if(k==='__open') f.openNow=!f.openNow;
