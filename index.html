@@ -217,6 +217,9 @@ main{padding:12px var(--gut) 80px}
 .daychips{display:flex;flex-wrap:wrap;gap:6px;padding:8px var(--gut) 6px}
 .daychip{border:1px solid #cdd3dd;background:#fff;border-radius:16px;padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--brand-dk);cursor:pointer}
 .daychip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.maptabs{display:flex;gap:6px;padding:2px 4px 8px}
+.maptab{flex:1 1 auto;border:1px solid #cdd3dd;background:#fff;border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600;color:var(--brand-dk);cursor:pointer}
+.maptab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
 .pnum{color:#5a6472;font-weight:600}
 .sd-saved{font-size:12px;color:var(--live);font-weight:600;margin-left:6px}
 .moreinfo{color:var(--rec);font-weight:700}
@@ -349,11 +352,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.16"></script>
-<script src="details.js?v=2026-06-27.16"></script>
-<script src="places-engine.js?v=2026-06-27.16"></script>
-<script src="places.js?v=2026-06-27.16"></script>
-<script src="evalmap.js?v=2026-06-27.16"></script>
+<script src="data.js?v=2026-06-27.17"></script>
+<script src="details.js?v=2026-06-27.17"></script>
+<script src="places-engine.js?v=2026-06-27.17"></script>
+<script src="places.js?v=2026-06-27.17"></script>
+<script src="evalmap.js?v=2026-06-27.17"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -430,7 +433,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.16';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.17';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -930,22 +933,25 @@ function requestLocation(silent){
     {enableHighAccuracy:true,timeout:10000,maximumAge:60000});
 }
 function autoGeo(){ if(!geoAsked){ geoAsked=true; requestLocation(true); } }
+let fullMapTab='prop1';
 function bindFullMaps(scope){
   scope.querySelectorAll('.lvlmap').forEach(m=>m.onclick=()=>openMapModal(m));
   const mlb=scope.querySelector('#myLocBtn'); if(mlb) mlb.onclick=()=>requestLocation(false);
+  scope.querySelectorAll('.maptab').forEach(b=>b.onclick=()=>{ fullMapTab=b.dataset.maptab;
+    if(activeTab==='live') renderLive(); else if(activeTab==='food') renderFood(); });
   autoGeo();
 }
 function fullMapsHTML(){
   const g=geoToMap();
   const dot=g?`<circle cx="${(g.x*100).toFixed(1)}" cy="${(g.y*100).toFixed(1)}" r="4.6" fill="#1a73e8" opacity="0.25"/><circle cx="${(g.x*100).toFixed(1)}" cy="${(g.y*100).toFixed(1)}" r="2.3" fill="#1a73e8" stroke="#fff" stroke-width="0.9"/>`:'';
-  const maps=[['prop1','Venetian / Palazzo — Level 1'],['prop2','Grand Canal Shoppes — Level 2']];
-  return `<div class="day-head" style="margin-top:18px">🗺️ Full venue map</div>`+
+  const m=PlacesEngine.MAP_META[fullMapTab];
+  const tab=(id,label)=>`<button class="maptab${fullMapTab===id?' on':''}" data-maptab="${id}">${label}</button>`;
+  return `<div class="day-head" style="margin-top:14px">🗺️ Full venue map</div>`+
     `<div class="note no-print" style="margin:0 4px 8px">Tap to zoom. Every restaurant & shop is numbered — find a place's <b>#</b> in the list, then spot it here.${g?' · <b style="color:#1a73e8">● blue dot = you</b> (rough indoors)':''}</div>`+
+    `<div class="maptabs no-print">${tab('prop1','Level 1')}${tab('prop2','Level 2 · Shoppes')}</div>`+
     `<button class="towl no-print" id="myLocBtn" style="margin:0 4px 10px">📍 Show my location</button>`+
-    maps.map(([id,label])=>{ const m=PlacesEngine.MAP_META[id];
-      return `<div class="lvlmap"><div class="lvlmap-h">${escapeHtml(label)} ⤢</div>`+
-        `<svg viewBox="0 0 100 100" width="100%"><image href="${m.img}?v=${APP_VER}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>${dot}</svg></div>`;
-    }).join('');
+    `<div class="lvlmap"><div class="lvlmap-h">${escapeHtml(m.label)} ⤢</div>`+
+    `<svg viewBox="0 0 100 100" width="100%"><image href="${m.img}?v=${APP_VER}" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/>${dot}</svg></div>`;
 }
 function cardLiveHTML(s,isConf,num){
   return `<div class="scard is-live" data-id="${s.id}">
@@ -1011,7 +1017,6 @@ function renderFood(){
     </div>`;
   }).join('');
   body.innerHTML=`
-    ${fullMapsHTML()}
     <div class="foodbar">
       <div class="foodorigin">From: <select id="foodOriginSel">
         <option value="next"${(state.foodOrigin||'next')==='next'?' selected':''}>my next session</option>
@@ -1021,6 +1026,7 @@ function renderFood(){
       <div class="foodchips">${FOOD_CATS.map(c=>chip(c[0],c[1],f.cats.includes(c[0]))).join('')}
         ${chip('__open','🕒 Open now',f.openNow)}${chip('__step','♿ Step-free',f.stepFree)}</div>
     </div>
+    ${fullMapsHTML()}
     <div class="foodlist">${rows||'<p class="empty">No places match those filters.</p>'}</div>`;
   bindFood();
 }
