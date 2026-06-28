@@ -305,6 +305,7 @@ main{padding:12px var(--gut) 80px}
 .fr-fav{flex:0 0 auto;border:0;background:none;font-size:20px;line-height:1;color:#c9ccd2;cursor:pointer;padding:0 2px;align-self:center}
 .fr-fav.on{color:#f5b301}
 .fr-resv{color:var(--brand);font-weight:600;text-decoration:none;white-space:nowrap}
+.fr-links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:3px}
 .foodrow .open{color:#1a8a4a;font-size:12px;font-weight:600}.foodrow .closed{color:#b23;font-size:12px}
 .fr-sub .approx{color:#a06a00;font-size:11.5px}
 .foodlist .empty{padding:20px var(--gut);color:#6b7280}
@@ -355,11 +356,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.21"></script>
-<script src="details.js?v=2026-06-27.21"></script>
-<script src="places-engine.js?v=2026-06-27.21"></script>
-<script src="places.js?v=2026-06-27.21"></script>
-<script src="evalmap.js?v=2026-06-27.21"></script>
+<script src="data.js?v=2026-06-27.22"></script>
+<script src="details.js?v=2026-06-27.22"></script>
+<script src="places-engine.js?v=2026-06-27.22"></script>
+<script src="places.js?v=2026-06-27.22"></script>
+<script src="evalmap.js?v=2026-06-27.22"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -436,7 +437,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.21';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.22';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -447,6 +448,8 @@ function isFav(id){ return !!(state.favs && state.favs[id]); }
 function toggleFav(id){ if(!state.favs) state.favs={}; if(state.favs[id]) delete state.favs[id]; else state.favs[id]=true; save(); }
 // Reservation handoff — opens OpenTable search for the venue (sit-down + food).
 function resvUrl(p){ return 'https://www.opentable.com/s?term='+encodeURIComponent(p.name+' Las Vegas'); }
+// Website handoff — Google search for the venue (lands on its official page).
+function webUrl(p){ return 'https://www.google.com/search?q='+encodeURIComponent(p.name+' Venetian Las Vegas'); }
 /* CEU evaluation portal (from the AANP app's "Complete your Evaluation" link). Sarah signs in
    with her own AANP credentials there; we only open it. Per-session completion is tracked locally. */
 const EVAL_URL = 'https://authis4.aanp.org/Legacy/Login?returnUrl=https%3A%2F%2Feval.aanp.org/conference%2F206';
@@ -1018,7 +1021,8 @@ function foodListInner(){
       <button class="fr-fav${isFav(p.id)?' on':''}" data-fav="${escapeAttr(p.id)}" aria-label="Favorite">${isFav(p.id)?'★':'☆'}</button>
       <div class="fr-main"><b>${escapeHtml(p.name)}</b> ${badge}
         <div class="fr-sub">${escapeHtml(p.area)}${numtag}${p.price?' · '+escapeHtml(p.price):''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
-        <div class="fr-hint">🚶 ${escapeHtml(hint)}${canResv?` · <a class="fr-resv" href="${escapeAttr(resvUrl(p))}" target="_blank" rel="noopener">📅 Reserve ↗</a>`:''}</div>
+        <div class="fr-hint">🚶 ${escapeHtml(hint)}</div>
+        <div class="fr-links">${canResv?`<a class="fr-resv" href="${escapeAttr(resvUrl(p))}" target="_blank" rel="noopener">📅 Reserve ↗</a>`:''}<a class="fr-resv" href="${escapeAttr(webUrl(p))}" target="_blank" rel="noopener">🌐 Website ↗</a></div>
         ${p.note?`<div class="fr-note">${escapeHtml(p.note)}</div>`:''}
       </div>
       <button class="fr-map" data-id="${escapeAttr(p.id)}">Map ›</button>
