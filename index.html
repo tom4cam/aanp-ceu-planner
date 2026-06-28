@@ -355,11 +355,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.20"></script>
-<script src="details.js?v=2026-06-27.20"></script>
-<script src="places-engine.js?v=2026-06-27.20"></script>
-<script src="places.js?v=2026-06-27.20"></script>
-<script src="evalmap.js?v=2026-06-27.20"></script>
+<script src="data.js?v=2026-06-27.21"></script>
+<script src="details.js?v=2026-06-27.21"></script>
+<script src="places-engine.js?v=2026-06-27.21"></script>
+<script src="places.js?v=2026-06-27.21"></script>
+<script src="evalmap.js?v=2026-06-27.21"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -436,7 +436,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.20';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.21';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -884,11 +884,11 @@ function placeMapHTML(place, origin){
   let route='', originPin='', destPin='';
   if(placed){
     // precise pin (curated) + walk route from origin when on the same map
-    destPin=`<circle cx="${cx}" cy="${cy}" r="1.8" fill="#e8463c" stroke="#fff" stroke-width="0.6"/>`;
+    destPin=`<circle cx="${cx}" cy="${cy}" r="0.9" fill="#e8463c" stroke="#fff" stroke-width="0.3"/>`;
     if(sameMap){
       const ox=(origin.x*100).toFixed(1), oy=(origin.y*100).toFixed(1);
-      route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="0.7" stroke-dasharray="2 1.5"/>`;
-      originPin=`<circle cx="${ox}" cy="${oy}" r="1.5" fill="#7a5cff" stroke="#fff" stroke-width="0.6"/>`;
+      route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="0.4" stroke-dasharray="1.5 1"/>`;
+      originPin=`<circle cx="${ox}" cy="${oy}" r="0.8" fill="#7a5cff" stroke="#fff" stroke-width="0.3"/>`;
     }
   }
   // Directory venues aren't hand-placed; the official map prints each one's number, so guide by number.
