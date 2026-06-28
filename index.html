@@ -302,6 +302,9 @@ main{padding:12px var(--gut) 80px}
 .fr-main{flex:1}.fr-sub{color:#5a6472;font-size:13px;margin-top:2px}
 .fr-hint{font-size:13px;margin-top:3px}.fr-note{font-size:12.5px;color:#6b7280;margin-top:3px;font-style:italic}
 .fr-map{flex:0 0 auto;border:1px solid var(--brand);color:var(--brand);background:#fff;border-radius:8px;padding:7px 10px;font-size:13px}
+.fr-fav{flex:0 0 auto;border:0;background:none;font-size:20px;line-height:1;color:#c9ccd2;cursor:pointer;padding:0 2px;align-self:center}
+.fr-fav.on{color:#f5b301}
+.fr-resv{color:var(--brand);font-weight:600;text-decoration:none;white-space:nowrap}
 .foodrow .open{color:#1a8a4a;font-size:12px;font-weight:600}.foodrow .closed{color:#b23;font-size:12px}
 .fr-sub .approx{color:#a06a00;font-size:11.5px}
 .foodlist .empty{padding:20px var(--gut);color:#6b7280}
@@ -352,11 +355,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-27.19"></script>
-<script src="details.js?v=2026-06-27.19"></script>
-<script src="places-engine.js?v=2026-06-27.19"></script>
-<script src="places.js?v=2026-06-27.19"></script>
-<script src="evalmap.js?v=2026-06-27.19"></script>
+<script src="data.js?v=2026-06-27.20"></script>
+<script src="details.js?v=2026-06-27.20"></script>
+<script src="places-engine.js?v=2026-06-27.20"></script>
+<script src="places.js?v=2026-06-27.20"></script>
+<script src="evalmap.js?v=2026-06-27.20"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -433,13 +436,17 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-27.19';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-27.20';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
 /* ---------- state ---------- */
 const LS_KEY = "aanp_ceu_planner_v1";
-const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, surveys:{}, driveFolder:'', driveScriptUrl:'', homeBase:true, homeLabel:'', homeLoc:null, _seedM_:false, _preloaded:false};
+const DEF = {picks:{}, rooms:{}, recUrls:{}, recOverride:{}, prior:0, manual:[], detail:{}, surveys:{}, favs:{}, driveFolder:'', driveScriptUrl:'', homeBase:true, homeLabel:'', homeLoc:null, _seedM_:false, _preloaded:false};
+function isFav(id){ return !!(state.favs && state.favs[id]); }
+function toggleFav(id){ if(!state.favs) state.favs={}; if(state.favs[id]) delete state.favs[id]; else state.favs[id]=true; save(); }
+// Reservation handoff — opens OpenTable search for the venue (sit-down + food).
+function resvUrl(p){ return 'https://www.opentable.com/s?term='+encodeURIComponent(p.name+' Las Vegas'); }
 /* CEU evaluation portal (from the AANP app's "Complete your Evaluation" link). Sarah signs in
    with her own AANP credentials there; we only open it. Per-session completion is tracked locally. */
 const EVAL_URL = 'https://authis4.aanp.org/Legacy/Login?returnUrl=https%3A%2F%2Feval.aanp.org/conference%2F206';
@@ -877,13 +884,11 @@ function placeMapHTML(place, origin){
   let route='', originPin='', destPin='';
   if(placed){
     // precise pin (curated) + walk route from origin when on the same map
-    destPin=`<circle cx="${cx}" cy="${cy}" r="5.2" fill="#e8463c" stroke="#fff" stroke-width="1.1"/>`+
-      `<text x="${cx}" y="${(parseFloat(cy)+1.7).toFixed(1)}" text-anchor="middle" font-size="5" fill="#fff" font-weight="700">●</text>`;
+    destPin=`<circle cx="${cx}" cy="${cy}" r="1.8" fill="#e8463c" stroke="#fff" stroke-width="0.6"/>`;
     if(sameMap){
       const ox=(origin.x*100).toFixed(1), oy=(origin.y*100).toFixed(1);
-      route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="1.3" stroke-dasharray="3 2"/>`;
-      originPin=`<circle cx="${ox}" cy="${oy}" r="4.4" fill="#7a5cff" stroke="#fff" stroke-width="1.1"/>`+
-        `<text x="${ox}" y="${(parseFloat(oy)+1.5).toFixed(1)}" text-anchor="middle" font-size="4" fill="#fff" font-weight="700">○</text>`;
+      route=`<line x1="${ox}" y1="${oy}" x2="${cx}" y2="${cy}" stroke="#7a5cff" stroke-width="0.7" stroke-dasharray="2 1.5"/>`;
+      originPin=`<circle cx="${ox}" cy="${oy}" r="1.5" fill="#7a5cff" stroke="#fff" stroke-width="0.6"/>`;
     }
   }
   // Directory venues aren't hand-placed; the official map prints each one's number, so guide by number.
@@ -999,29 +1004,36 @@ function foodListInner(){
   // A text search looks across ALL categories — ignore the category chips while searching,
   // so e.g. "buddy" finds Buddy V's even though Sit-down isn't a selected chip.
   const searching=!!(f.q && f.q.trim());
-  const filtered=PlacesEngine.filterPlaces(window.PLACES||[], {q:f.q,cats:searching?[]:f.cats,openNow:searching?false:f.openNow,stepFree:searching?false:f.stepFree,now});
-  const sorted=PlacesEngine.sortByWalk(filtered, origin);
+  let list=PlacesEngine.filterPlaces(window.PLACES||[], {q:f.q,cats:searching?[]:f.cats,openNow:searching?false:f.openNow,stepFree:searching?false:f.stepFree,now});
+  if(!searching && f.fav) list=list.filter(p=>isFav(p.id));   // ★ Favorites filter (off while searching)
+  const sorted=PlacesEngine.sortByWalk(list, origin);
   const rows=sorted.map(p=>{
     const open=PlacesEngine.isOpenNow(p, now);
     const badge=open===true?'<span class="open">Open</span>':open===false?'<span class="closed">Closed</span>':'';
     const hint=PlacesEngine.formatHint(p._walk, {stepFree:p.stepFree});
     const numtag=p.num?` · <span class="pnum">#${escapeHtml(p.num)}</span>`:'';
     const approx=p.placed?'':' <span class="approx">on map</span>';
+    const canResv=(p.cat==='sitdown'||p.cat==='food');
     return `<div class="foodrow" data-id="${escapeAttr(p.id)}">
+      <button class="fr-fav${isFav(p.id)?' on':''}" data-fav="${escapeAttr(p.id)}" aria-label="Favorite">${isFav(p.id)?'★':'☆'}</button>
       <div class="fr-main"><b>${escapeHtml(p.name)}</b> ${badge}
         <div class="fr-sub">${escapeHtml(p.area)}${numtag}${p.price?' · '+escapeHtml(p.price):''}${p.hours?' · '+escapeHtml(p.hours):''}${approx}</div>
-        <div class="fr-hint">🚶 ${escapeHtml(hint)}</div>
+        <div class="fr-hint">🚶 ${escapeHtml(hint)}${canResv?` · <a class="fr-resv" href="${escapeAttr(resvUrl(p))}" target="_blank" rel="noopener">📅 Reserve ↗</a>`:''}</div>
         ${p.note?`<div class="fr-note">${escapeHtml(p.note)}</div>`:''}
       </div>
       <button class="fr-map" data-id="${escapeAttr(p.id)}">Map ›</button>
     </div>`;
   }).join('');
-  return rows||'<p class="empty">No places match those filters.</p>';
+  return rows||`<p class="empty">${(!searching && f.fav)?'No favorites yet — tap ☆ on a place to save it.':'No places match those filters.'}</p>`;
+}
+function bindFoodRows(scope){
+  (scope||document).querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
+  (scope||document).querySelectorAll('.fr-fav').forEach(b=>b.onclick=()=>{ toggleFav(b.dataset.fav); refreshFoodList(); });
 }
 function refreshFoodList(){ // update only the results list (keeps the search box focused)
   const fl=document.querySelector('#view-food .foodlist'); if(!fl) return;
   fl.innerHTML=foodListInner();
-  fl.querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
+  bindFoodRows(fl);
 }
 function renderFood(){
   const body=document.getElementById('foodBody'); if(!body) return;
@@ -1037,7 +1049,7 @@ function renderFood(){
       </select> <span class="origin-label">→ ${escapeHtml(origin.label)}</span></div>
       <input id="foodSearch" type="search" placeholder="Search shops &amp; restaurants…" value="${escapeAttr(f.q)}">
       <div class="foodchips">${FOOD_CATS.map(c=>chip(c[0],c[1],f.cats.includes(c[0]))).join('')}
-        ${chip('__open','🕒 Open now',f.openNow)}${chip('__step','♿ Step-free',f.stepFree)}</div>
+        ${chip('__fav','★ Favorites',f.fav)}${chip('__open','🕒 Open now',f.openNow)}${chip('__step','♿ Step-free',f.stepFree)}</div>
     </div>
     ${fullMapsHTML()}
     <div class="foodlist">${foodListInner()}</div>`;
@@ -1050,10 +1062,11 @@ function bindFood(){
     const k=b.dataset.cat, f=state.foodFilters;
     if(k==='__open') f.openNow=!f.openNow;
     else if(k==='__step') f.stepFree=!f.stepFree;
+    else if(k==='__fav') f.fav=!f.fav;
     else { const i=f.cats.indexOf(k); if(i>=0) f.cats.splice(i,1); else f.cats.push(k); }
     save(); renderFood();
   });
-  document.querySelectorAll('.fr-map').forEach(b=>b.onclick=()=>openPlaceMap(b.dataset.id));
+  bindFoodRows(document.getElementById('view-food'));
   bindFullMaps(document.getElementById('view-food'));
 }
 
