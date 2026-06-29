@@ -83,6 +83,24 @@ main{padding:12px var(--gut) 80px}
   #blist .day-head{grid-column:1/-1}
   #blist .scard{margin-bottom:0}
 }
+/* ---- Desktop / wide-screen: center the column, keep brand bars full-bleed ---- */
+@media(min-width:760px){
+  .app-title, nav.tabs, main{max-width:1060px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+  /* CEU ribbon stays full-bleed (dark bar to the edges) but its content centers to 1060 */
+  .ceu-ribbon{box-sizing:border-box;padding-left:max(var(--gut),calc((100% - 1060px) / 2));
+              padding-right:max(var(--gut),calc((100% - 1060px) / 2))}
+  /* roomier floor-plan maps on desktop (My Map + Food & Shops) */
+  .lvlmap{max-width:430px}
+  /* Watch Later + My Notes: cards flow into two columns; headers/panels span full width */
+  #view-rec, #view-notes{display:grid;grid-template-columns:1fr 1fr;gap:9px 10px;align-items:start}
+  #view-rec > *, #view-notes > *{grid-column:1 / -1}
+  #view-rec > .scard, #view-notes > .scard{grid-column:auto;margin-bottom:0}
+}
+/* Food & Shops: two-column directory on wide screens */
+@media(min-width:900px){
+  .foodlist{display:grid;grid-template-columns:1fr 1fr;column-gap:8px;align-items:start}
+  .foodlist .empty{grid-column:1 / -1}
+}
 
 /* ---- Filters ---- */
 .filters{background:var(--card);border:1px solid var(--line);border-radius:12px;
@@ -356,11 +374,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-29.1"></script>
-<script src="details.js?v=2026-06-29.1"></script>
-<script src="places-engine.js?v=2026-06-29.1"></script>
-<script src="places.js?v=2026-06-29.1"></script>
-<script src="evalmap.js?v=2026-06-29.1"></script>
+<script src="data.js?v=2026-06-29.2"></script>
+<script src="details.js?v=2026-06-29.2"></script>
+<script src="places-engine.js?v=2026-06-29.2"></script>
+<script src="places.js?v=2026-06-29.2"></script>
+<script src="evalmap.js?v=2026-06-29.2"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -437,7 +455,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-29.1';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-29.2';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
@@ -1607,7 +1625,9 @@ function show(tab){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   document.querySelectorAll('.view').forEach(v=>{
     const on = v.id==='view-'+tab;
-    v.style.display = on?'block':'none';
+    // rec/notes use a CSS grid (2-up on desktop) — clear inline display so the stylesheet wins
+    const grid = on && (v.id==='view-rec' || v.id==='view-notes');
+    v.style.display = on ? (grid?'':'block') : 'none';
     v.classList.toggle('print-on', tab==='plan' && v.id==='view-plan');
   });
   renderActive();
