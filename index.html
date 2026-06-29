@@ -30,7 +30,7 @@ window.APP_VERSION = '2026-06-23.1';
   --live:#1565c0; --live-soft:#e7f0fb; --rec:#0e9fc4; --rec-soft:#e2f5fb;
   --skip:#9aa7b4; --warn:#c8451f; --warn-soft:#fcebe5; --gold:#b8860b;
   --shadow:0 1px 3px rgba(16,32,48,.08),0 1px 2px rgba(16,32,48,.06);
-  --maxw:920px; --gut:max(14px, calc(50vw - 460px));
+  --maxw:1100px; --gut:max(14px, calc(50vw - 550px));  /* content centers to 1100px on desktop, 14px gutter on mobile */
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -83,12 +83,10 @@ main{padding:12px var(--gut) 80px}
   #blist .day-head{grid-column:1/-1}
   #blist .scard{margin-bottom:0}
 }
-/* ---- Desktop / wide-screen: center the column, keep brand bars full-bleed ---- */
+/* ---- Desktop / wide-screen: roomier maps + multi-column lists.
+   (Horizontal centering is already handled app-wide by --gut/--maxw above — do NOT add
+   another max-width here or it double-centers and collapses the content.) ---- */
 @media(min-width:760px){
-  .app-title, nav.tabs, main{max-width:1060px;margin-left:auto;margin-right:auto;box-sizing:border-box}
-  /* CEU ribbon stays full-bleed (dark bar to the edges) but its content centers to 1060 */
-  .ceu-ribbon{box-sizing:border-box;padding-left:max(var(--gut),calc((100% - 1060px) / 2));
-              padding-right:max(var(--gut),calc((100% - 1060px) / 2))}
   /* roomier floor-plan maps on desktop (My Map + Food & Shops) */
   .lvlmap{max-width:430px}
   /* Watch Later + My Notes: cards flow into two columns; headers/panels span full width */
@@ -232,7 +230,7 @@ main{padding:12px var(--gut) 80px}
 .card-act{margin-top:8px}
 .towl{background:#fff;border:1px solid var(--rec);color:var(--rec);border-radius:7px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer}
 .towl:active{background:var(--rec);color:#fff}
-.daychips{display:flex;flex-wrap:wrap;gap:6px;padding:8px var(--gut) 6px}
+.daychips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px 6px}  /* fixed inset — main already provides the --gut gutter */
 .daychip{border:1px solid #cdd3dd;background:#fff;border-radius:16px;padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--brand-dk);cursor:pointer}
 .daychip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
 .maptabs{display:flex;gap:6px;padding:2px 4px 8px}
@@ -311,12 +309,12 @@ main{padding:12px var(--gut) 80px}
   a[href]:after{content:""}
 }
 .print-on{display:none}
-.foodbar{padding:8px var(--gut)}
+.foodbar{padding:8px 14px}  /* fixed inset — main already provides the --gut gutter */
 .foodbar input[type=search]{width:100%;padding:9px 11px;font-size:15px;border:1px solid #d4d8e0;border-radius:10px;margin:8px 0}
 .foodchips{display:flex;flex-wrap:wrap;gap:6px}
 .foodchip{border:1px solid #cdd3dd;background:#fff;border-radius:16px;padding:5px 10px;font-size:12.5px}
 .foodchip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-.foodrow{display:flex;align-items:center;gap:10px;padding:11px var(--gut);border-bottom:1px solid #eef1f5}
+.foodrow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #eef1f5}
 .fr-main{flex:1}.fr-sub{color:#5a6472;font-size:13px;margin-top:2px}
 .fr-hint{font-size:13px;margin-top:3px}.fr-note{font-size:12.5px;color:#6b7280;margin-top:3px;font-style:italic}
 .fr-map{flex:0 0 auto;border:1px solid var(--brand);color:var(--brand);background:#fff;border-radius:8px;padding:7px 10px;font-size:13px}
@@ -326,7 +324,7 @@ main{padding:12px var(--gut) 80px}
 .fr-links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:3px}
 .foodrow .open{color:#1a8a4a;font-size:12px;font-weight:600}.foodrow .closed{color:#b23;font-size:12px}
 .fr-sub .approx{color:#a06a00;font-size:11.5px}
-.foodlist .empty{padding:20px var(--gut);color:#6b7280}
+.foodlist .empty{padding:20px 14px;color:#6b7280}
 .origin-label{color:#5a6472;font-size:13px}
 </style>
 </head>
@@ -374,11 +372,11 @@ main{padding:12px var(--gut) 80px}
 <div class="mapmodal" id="mapModal"><button class="mm-close" id="mmClose" aria-label="Close">✕</button><div class="mm-card" id="mmCard"></div></div>
 <div class="sheet" id="sessModal"><button class="mm-close" id="sessClose" aria-label="Close">✕</button><div class="sheet-card" id="sessCard"></div></div>
 
-<script src="data.js?v=2026-06-29.2"></script>
-<script src="details.js?v=2026-06-29.2"></script>
-<script src="places-engine.js?v=2026-06-29.2"></script>
-<script src="places.js?v=2026-06-29.2"></script>
-<script src="evalmap.js?v=2026-06-29.2"></script>
+<script src="data.js?v=2026-06-29.3"></script>
+<script src="details.js?v=2026-06-29.3"></script>
+<script src="places-engine.js?v=2026-06-29.3"></script>
+<script src="places.js?v=2026-06-29.3"></script>
+<script src="evalmap.js?v=2026-06-29.3"></script>
 <script>
 "use strict";
 const TARGET = 75;
@@ -455,7 +453,7 @@ const FEAT_TAGS = new Set(FEATURED.map(f=>f.tag));
 const CLINICAL_TAGS = (()=>{ const t=[...new Set(SESS.flatMap(s=>s.tags||[]))].filter(x=>!FEAT_TAGS.has(x)).sort();
   const o=t.filter(x=>x!=='Other / General'); if(t.includes('Other / General')) o.push('Other / General'); return o; })();
 // short display labels for tag pills on cards
-const APP_VER = '2026-06-29.2';  // bump on every deploy; also cache-busts map images
+const APP_VER = '2026-06-29.3';  // bump on every deploy; also cache-busts map images
 const TAG_DISPLAY = {"Neurology":"Neuro","Optional (no CEUs)":"No CEU","University Teaching":"Teaching","Sponsored Meals":"Meal"};
 function tagPillLabel(s,t){ if(t==="Extra Cost") return s.feeAmt?("$"+s.feeAmt):"Extra Cost"; return TAG_DISPLAY[t]||t; }
 
